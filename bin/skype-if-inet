@@ -1,0 +1,6 @@
+#!/bin/bash
+sleep 0.5
+if [ "$(ifconfig wlo1 | grep 'inet')" ] && ! [[ "$(iwgetid -r)" ~= (eduroam|AirBears2) ]]; then
+	skypeforlinux $* &
+fi
+

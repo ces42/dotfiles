@@ -1,0 +1,9 @@
+#!/bin/bash
+PAUSE=15
+ID=$(xinput list | grep '⎜   ↳ ELAN2514:00 04F3:2B11  ' | grep -oP '(?<=id\=)\d+')
+while true; do
+	echo toggle!
+	xinput disable $ID
+	xinput enable $ID
+	sleep $PAUSE
+done

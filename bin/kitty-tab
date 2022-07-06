@@ -1,0 +1,9 @@
+#!/bin/sh
+
+pid=$(pgrep --runstate S --uid $USER kitty | head -n 1)
+if [ -n $pid ]; then
+	kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab --cwd ''$1
+	kitty @ --to "unix:@kittyc1748-$pid" focus-window
+else
+	kitty -d ''$1
+fi

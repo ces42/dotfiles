@@ -1,0 +1,2 @@
+#!/bin/bash
+xfce4-terminal --tab -e "dtach -a /tmp/$1"

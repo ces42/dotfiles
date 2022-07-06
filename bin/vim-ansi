@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cat - | awk '/^$/ {nlstack=nlstack "\n";next;} {printf "%s",nlstack; nlstack=""; print;}' > /tmp/buff-$$
+vim "$@" -c "term tail -n 200 /tmp/buff-$$" -c ':only' -c "norm Gdj"< /dev/tty

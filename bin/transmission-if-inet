@@ -1,0 +1,6 @@
+#!/bin/bash
+sleep 10
+if wget https://example.com -O /dev/null; then
+    transmission-gtk --minimized $* &
+fi
+

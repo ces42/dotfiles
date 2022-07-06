@@ -1,0 +1,69 @@
+#!/bin/env bash
+#{sleep .01; wmctrl -r :ACTIVE: -b toggle,skip_taskbar}&!
+IFS='
+'
+PATH="$PATH:$HOME/.fzf/bin"
+tput smkx
+IGNORES="--no-ignore-vcs -E '{*.aux,*.fls,*.out,*.fdb_latexmk,*.synctex.gz}'"
+IFS=''
+read -r -d '' cmd1 <<"END"
+	--multi \
+	--reverse \
+	--preview '{ [ -d {} ] && ls -alh --color=always {} } || { [[ $(file --mime {}) =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {}) =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime {}) =~ binary ]] && echo binary file, $(du -kh {} | cut -f1)B && ls -lah {} } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }' \
+	--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word" \
+END
+read -r cmd2 <<END
+	--bind "alt-d:change-prompt(D> )+reload(fd -L --type d $IGNORES)" \
+	--bind "alt-f:change-prompt(F> )+reload(fd -L --type f $IGNORES)"\
+	--bind "f5:reload(fd -L $IGNORES)" \
+	--preview-window "right:50%:border-left:hidden" \
+	--color=fg:#ffffff,hl:#00a000 \
+	--color=fg+:#ffff20,bg+:#262626,hl+:#20ff20 \
+	--color=info:#afaf87,prompt:#07cdff \
+	--color=marker:#87ff00,spinner:#af5fff,header:#87afaf \
+	--expect=ctrl-o,alt-enter,ctrl-]
+END
+
+cmd="fd -L $IGNORES | fzf"$cmd1$cmd2
+
+#mode=$(echo out | head -n 1)
+#files=$(echo out | tail -n +2)
+
+#echo $(echo $out | awk -F "\n" "{print $1}")
+echo "$out"
+if [[ $(echo "$out" | head -n 1) == "ctrl-o" ]]; then
+	for f in "$(echo "$out" | tail -n +2)"; do
+		if [ -d "$f" ]; then
+			detach xdg-open "$f"
+		elif [[ "$(file --mime "$f")" =~ application/pdf ]]; then
+			detach okular "$f"
+		fi
+	done
+elif [[ $(echo "$out" | head -n 1) == "alt-enter" ]]; then
+	for f in "$(echo "$out" | tail -n +2)"; do
+		open=$(dmenu_path | dmenu "$@")
+		echo "$open $f"
+		detach zsh -c "$open $f"
+		sleep 5
+	done
+elif [[ $(echo "$out" | head -n 1) == "ctrl-]" ]]; then
+	for f in "$(echo "$out" | tail -n +2)"; do
+		eval "$(xdotool getmouselocation --shell)"
+		dragon --and-exit "$f" &
+		while true; do
+			xid="$(xdotool search --onlyvisible --class  dragon | head -n 2)"
+			test -z "$xid" || break
+			sleep 0.05
+		done
+		xdotool mousemove --sync -w "$xid" 1 1 mousedown 1 mousemove $X $Y
+		notify-send "Click to drop $f..."
+	done
+else
+	for f in $out; do
+		if [ -d "$f" ]; then
+			detach tilix -w "$f"
+		else
+			detach xdg-open "$f"
+		fi
+	done
+fi

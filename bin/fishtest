@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$(upower -i /org/freedesktop/UPower/devices/line_power_AC | grep online | grep yes)" ]; then
+    sudo -i -u fishtest /home/fishtest/worker/worker.py --concurrency $1 0x539 asdf
+else
+    echo "connect power supply"
+fi

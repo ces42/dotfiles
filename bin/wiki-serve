@@ -1,0 +1,1 @@
+/home/ca/kiwix/kiwix-linux/kiwix-serve --library --port=8000 /home/ca/kiwix/data/library/all_libs.xml

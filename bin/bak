@@ -1,0 +1,23 @@
+#!/bin/bash
+REPLACE=false
+for a in "$@"; do
+	if [ "$a" = "-u" ]; then
+		REPLACE=true
+		break
+	fi
+done
+
+for f in "${@%/}"; do
+	[ "$f" = "-u" ] && continue
+	if [ "$REPLACE" = false ] && [ -e "$f.bak" ]; then
+		n=1
+		while [[ -e "$f.bak$n" ]]; do
+			((n++))
+		done
+		echo $f '->' $f.bak$n
+		cp -r "$f" "$f.bak$n"
+	else
+		echo $f '->' $f.bak
+		cp -r "$f" "$f.bak"
+	fi
+done

@@ -1,0 +1,6 @@
+#!/bin/bash
+sleep 0.5
+if [ "$(xrandr | grep 'DP-1 connected')" ]; then
+sleep 0.3
+terminator --profile=2nd-monitor -x sh -c 'sleep 0.1 ;wmctrl -r :ACTIVE: -e 0,1920,0,100,100;wmctrl -r :ACTIVE: -b add,fullscreen,below;wmctrl -r :ACTIVE: -b add,skip_taskbar;zsh'
+fi

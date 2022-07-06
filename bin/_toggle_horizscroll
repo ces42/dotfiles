@@ -1,0 +1,4 @@
+#!/bin/bash
+ID=$(xinput list | grep '⎜   ↳ SYNA32A2:00 06CB:CE17 Touchpad  ' | grep -oP '(?<=id\=)\d+')
+stat=$(xinput list-props $ID | grep 341 | grep -oP '\d$')
+xinput set-prop $ID 341 $((1-$stat))

@@ -1,0 +1,100 @@
+#!/usr/bin/python3
+#-------------------------------------------------------------------------------
+# Name:        roll.py
+# Purpose:
+#
+# Author:      Carlos Esparza-Sanchez
+#
+# Created:     09.02.2014
+# Copyright:   (c) Carlos Esparza-Sanchez 2014
+# Licence:     no licence
+#-------------------------------------------------------------------------------
+
+from sys import argv
+from random import randint
+
+def sign(num):
+    if num:
+        return int(int(num)/abs(int(num)))
+    else:
+        return 0
+
+def roll(die):
+    if 'd' in die:
+        die = die.split('d')
+        if not die[0] or die[0] == '-': die[0]+='1'
+    elif 'w' in die:
+        die = die.split('w')
+        if not die[0]: die[0]=1
+    elif '*' in die:
+        die = die.split('*')
+        return [int(die[0])*int(die[1])]
+    else:
+        return [int(die)]
+
+    result=[]
+    for i in range(abs(int(die[0]))):
+        result.append(randint(1, d_to_int(die[1]))
+                      * sign(int(die[0])))
+    return result
+
+def d_to_int(s):
+    if s == '%':
+        return 100
+    else:
+        return int(s) if s else 6 
+
+
+def calculate(dice):
+    results=[]
+    for die in dice:
+        die.replace('\\', '|')
+        if '|' in die:
+            die=die.split('|')
+            take = int(die[1])
+            rolled = roll(die[0])
+            rolled.sort(reverse=True)
+            if sign(take) == 1:
+                results += rolled[:take]
+            elif sign(take) == -1:
+                results += rolled[take:]
+        else:
+            results += roll(die)
+    return results
+
+def roll_string(arg):
+    arg = arg.replace(' ', '')
+    arg = arg.replace('-', '+-')
+    arg = arg.replace('\\+-', '\\-')
+    times=1
+
+    output = []
+
+    if 'x' in arg:
+        arg = arg.split('x')
+        times = int(arg[1])
+        arg = arg[0]
+    dice = arg.split('+')
+
+    for i in range(times):
+        results = calculate(dice)
+        toprint = ''
+        if len(results) >1:
+            for num in results:
+                toprint += str(num) + '+'
+            toprint = toprint.replace('+-','-')
+            output.append(toprint[:-1] + '= ' + str(sum(results)))
+        else:
+            output.append(results[0])
+
+    return '\n'.join(str(x) for x in output)
+
+
+if __name__ == '__main__':
+    if len(argv) <= 1:
+        arg = 'd6'
+    else:
+        arg = ''.join(argv[1:])
+
+    print(roll_string(arg))
+

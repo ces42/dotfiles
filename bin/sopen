@@ -1,0 +1,6 @@
+#!/bin/bash
+STR="sopen-$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 10)"
+scp $* /tmp/$STR
+xdg-open /tmp/$STR
+sleep 4  
+rm /tmp/$STR

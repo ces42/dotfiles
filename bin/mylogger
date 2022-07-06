@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+import sys
+
+with open('/home/ca/log.txt', 'w') as f:
+	f.write('\n\n'.join(sys.argv))

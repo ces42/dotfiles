@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "#\!/bin/bash
+ydotool key --key-delay 0 $2" > /usr/bin/keys/$1
+chmod +x /usr/bin/keys/$1

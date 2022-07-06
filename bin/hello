@@ -1,0 +1,2 @@
+#\!/bin/bash
+ydotool key --key-delay world

@@ -1,6 +1,5 @@
 Unfortunately I accidentally deleted this file...
 Content that I remember being here
- - How I remapped caps lock and escape (caps2esc? but there's also a .service file involved somewhere I think)
  - 32 bit libraries that were required for Civ V (cracked... Or maybe wine?)
  - 
 

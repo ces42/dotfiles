@@ -1,0 +1,34 @@
+{
+    "type": "phrase",
+    "description": "MLK address",
+    "modes": [
+        3
+    ],
+    "usageCount": 18,
+    "prompt": false,
+    "omitTrigger": false,
+    "matchCase": false,
+    "showInTrayMenu": true,
+    "abbreviation": {
+        "abbreviations": [
+            "\\partial"
+        ],
+        "backspace": true,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[\\w]"
+    },
+    "hotkey": {
+        "modifiers": [
+            "<alt>",
+            "<shift>"
+        ],
+        "hotKey": "a"
+    },
+    "filter": {
+        "regex": null,
+        "isRecursive": false
+    },
+    "sendMode": "<shift>+<insert>"
+}

@@ -1,0 +1,28 @@
+{
+    "type": "script",
+    "description": "f1-unicodeit",
+    "store": {},
+    "modes": [
+        3
+    ],
+    "usageCount": 554,
+    "prompt": false,
+    "omitTrigger": false,
+    "showInTrayMenu": false,
+    "abbreviation": {
+        "abbreviations": [],
+        "backspace": true,
+        "ignoreCase": false,
+        "immediate": false,
+        "triggerInside": false,
+        "wordChars": "[\\w]"
+    },
+    "hotkey": {
+        "modifiers": [],
+        "hotKey": "<f1>"
+    },
+    "filter": {
+        "regex": "^(?!M\\-13\\.0\\.Mathematica).*",
+        "isRecursive": false
+    }
+}

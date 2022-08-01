@@ -14,12 +14,14 @@ function! TexSetup()
     inoremap <buffer> <expr> <BS> (b:_quick_undo_tick == b:changedtick) && (col('.') == b:_quick_undo_pos[1]) && (line('.') == b:_quick_undo_pos[0]) ? '<C-o>u<C-o>u<BS>' : v:lua.MPairs.autopairs_bs(bufnr())
     "
     " in Kitty I have ctrl+9 mapped to F13 and ctrl+0 mapped to F14
-    imap <buffer> <F13> <C-\><C-O>tsd
-    imap <buffer> <F14> <C-\><C-O>tsd
+    "imap <buffer> <F13> <C-\><C-O>tsd
+    "imap <buffer> <F14> <C-\><C-O>tsd
     imap <buffer> <C-0> <C-\><C-O>tsd
     imap <buffer> <C-9> <C-\><C-O>tsd
     "nnoremap <buffer> ci= F=lct=  <left>
     "nnoremap <buffer> ci+ F+lct+  <left>
+
+    imap <C-/> 
     nmap <buffer> <leader>o cicoperatorname{<C-R>"}<ESC>
     setlocal matchpairs=(:) " vimtex already highlights [] and {} (much faster than matchpairs or matchpairs.nvim)
     setlocal iskeyword=@,48-57,192-255

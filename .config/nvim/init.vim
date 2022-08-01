@@ -51,7 +51,7 @@ call plug#begin()
     Plug 'vim-pandoc/vim-pandoc-syntax', {'for': 'pandoc'}
     Plug 'vim-pandoc/vim-pandoc', {'for': ['pandoc', 'pandoc-tex']} " for pandoc
     Plug 'sirver/UltiSnips' " insert snippets
-    Plug 'honza/vim-snippets', {'for': ['tex', 'snippets']} " lots of predefined snippets
+    "Plug 'honza/vim-snippets', {'for': ['tex', 'snippets']} " lots of predefined snippets
     Plug 'lambdalisue/suda.vim' " sudo-save with :W
     "Plug 'jiangmiao/auto-pairs' " autocomplete ( etc.
     Plug 'vim-python/python-syntax', {'for': 'python'}
@@ -224,33 +224,31 @@ if exists('g:started_by_firenvim')
 
     augroup FireNVim
         au!
-        py3 from translate_tex_chr import tr_restore_buffer
+        "py3 from translate_tex_chr import tr_restore_buffer
 
         " TeXnique
         au BufEnter firenvim_texnique_*.tex call AlwaysMath()
         "au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG$
-        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG
-        au BufWritePre firenvim_texnique_*.tex py3 tr_change_buffer('unix')
-        au BufWritePost firenvim_texnique_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(500)
-        au TextChanged firenvim_texnique_*.tex call Delay_My_Write(500)
+        "au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG
+        "au BufWritePre firenvim_texnique_*.tex py3 tr_change_buffer('unix')
+        "au BufWritePost firenvim_texnique_*.tex py3 tr_restore_buffer()
+        "au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(500)
+        "au TextChanged firenvim_texnique_*.tex call Delay_My_Write(500)
         "au BufWrite firenvim_texnique_*.tex %s/\$//ge
         "au BufWrite firenvim_texnique_*.tex lua expand_font_macros()
         "au BufEnter firenvim_texnique_*.tex normal i$
         
         " Stackexchange
-        au BufWrite firenvimSE_*.tex lua expand_font_macros()
-        au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
-        au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvimSE_*.tex call Delay_My_Write(5000)
-        au TextChanged firenvimSE_*.tex call Delay_My_Write(5000)
+        "au BufWrite firenvimSE_*.tex lua expand_font_macros()
+        "au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
+        "au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
+        "au TextChangedI firenvimSE_*.tex call Delay_My_Write(5000)
+        "au TextChanged firenvimSE_*.tex call Delay_My_Write(5000)
 
         au BufEnter * set nonumber
         "au BufWrite SE_*.tex lua expand_font_macros()
         au BufReadPre /tmp/*.tex let b:translate_tex_unicode = 0
     augroup END
-
-    imap <C-/> 
 
     let g:firenvim_config = {
         \ 'localSettings': {

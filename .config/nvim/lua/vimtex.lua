@@ -66,6 +66,7 @@ function imaps_setup()
         vim.bo.iminsert = 1
     else
         vim.bo.iminsert = 0
+        shortcuts = {}
     end
     for k, v in pairs(imaps) do
         if v.lhs:match("^%a$") and v.rhs:match("^\\") and shortcuts[v.lhs] == nil then-- %l is a 'regex' class for lowercase letters

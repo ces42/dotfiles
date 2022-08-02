@@ -1,9 +1,13 @@
 {
     "type": "script",
-    "description": "AS-h",
-    "store": {},
-    "modes": [],
-    "usageCount": 2,
+    "description": "Name",
+    "store": {
+        "last": 0
+    },
+    "modes": [
+        3
+    ],
+    "usageCount": 141,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,
@@ -20,7 +24,7 @@
             "<alt>",
             "<shift>"
         ],
-        "hotKey": "h"
+        "hotKey": "n"
     },
     "filter": {
         "regex": null,

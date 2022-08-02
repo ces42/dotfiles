@@ -1,9 +1,9 @@
 {
     "type": "script",
-    "description": "AS-h",
+    "description": "test",
     "store": {},
     "modes": [],
-    "usageCount": 2,
+    "usageCount": 107,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,
@@ -20,7 +20,7 @@
             "<alt>",
             "<shift>"
         ],
-        "hotKey": "h"
+        "hotKey": "g"
     },
     "filter": {
         "regex": null,

@@ -1,8 +1,7 @@
 from re import sub, match
 if match("M\-13\.0\.Mathematica", window.get_active_class()):
     keyboard.send_keys('<f1>')
-else: 
-    import time
+else:
     import unicodeit
 
     try:
@@ -50,7 +49,7 @@ else:
         
 
     for c in 'CQRZHP':
-        textpp = textpp.replace('\\'+c+c, '\\mathbb{' + c + '}')
+        textpp = textpp.replace('\\'+c*2, '\\mathbb{' + c + '}')
 
     new = unicodeit.replace(textpp)
     new = new.replace('\shrug', r'¯\_(ツ)_/¯')
@@ -60,6 +59,6 @@ else:
     # clipboard.fill_clipboard(window.get_active_class())
     keyboard.send_keys("<shift>+<insert>")
 
-    time.sleep(0.05)
+    time.sleep(0.5)
     if old != -1:
         clipboard.fill_clipboard(old)

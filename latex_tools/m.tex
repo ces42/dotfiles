@@ -1,0 +1,357 @@
+%&preamble
+%\include{preamble}
+
+% show in compilation whether the precompiled preamble was loaded
+% cf. https://tex.stackexchange.com/questions/15604/how-to-speed-up-pdflatex-for-a-very-large-document-on-macos-x/15606#15606
+\def\ifundefined#1{\expandafter\ifx\csname#1\endcsname\relax} \ifundefined{preambleloaded}
+	\typeout{PRECOMILED PREAMBLE NOT LOADED}\input{preamble} \else
+	\typeout{\preambleloaded}
+\fi
+
+\usepackage[margin=3cm]{geometry}
+
+\usepackage[size=scriptsize]{todonotes}
+
+\usepackage{tgpagella}
+
+% colors
+\newcommand{\good}[1]{\textbf{\textcolor{green!70!black}{#1}}}
+\newcommand{\bad}[1]{\textbf{\textcolor{red!90!black}{#1}}}
+\newcommand{\bigthm}[1]{\textbf{\textcolor{Firebrick4}{#1}}}
+\renewcommand{\demph}[1]{\textbf{\textcolor{orange}{#1}}}
+\newcommand{\Gr}{\mathrm{Gr}}
+
+
+% symbols
+\newcommand{\trans}{\pitchfork}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Pic}{Pic}
+
+\begin{document}
+% ------------------------------------------------------------------------------
+% Fundamental classes of analytic submanifolds
+% ------------------------------------------------------------------------------
+\section{Fundamental classes of analytic subsets}%
+\label{sec:fundamental_classes_of_analytic_submanifolds}
+
+In \cite[p.\ 61]{GH} the authors explain how every $k$-dimensional analytic subsets $Z$ of a complex manifold $M$ induces a map $H_{2n-2k}(M; \mathbb{Z}) \to \mathbb{Z}$. By UCT this determines a unique cohomology class $η_Z = H^{2n-2k}(M; \mathbb{Q})$. If $M$ is compact we actually have a class in $H^{2n-2k}(M; \ZZ) / \mathrm{torsion}$.
+%\todo{Side question: When $M$ is compact we get a unique class in $H^{2n-2k}(M; \mathbb{Z}) / \mathrm{torsion}$. Is this also true for non-compact $M$?}
+
+%For any topological space $X$ and any integer $d$, UCT gives a LES $$0\to\mathrm{Ext}^1(H_{d-1}(X),\mathbb{Z})\to H^d(X)\to\mathrm{Hom}(H_d(X),\mathbb{Z})\to0$$
+%(Here the first term is not necessary torsion if $H_{d-1}(X)$ is not finitely generated.)
+	%On p. 62 they describe how we can compute the intersection number of two subvarieties $Z, Y$. How do we see that this is the same as the intersection pairing of $η_Z$ and $η_Y$ ? This is clear when one of $Y$ and $Z$ is smooth but what about the general case?
+OTOH we can also use the current of integration on $Z$ to get $[Z] \in H^{2k}_\mathrm{dR}(M)^* \cong H_{2k}(M; \RR)$.
+
+The goal of this note is to show that for \textbf{compact} $M$ these two different definition of fundamental classes are Poincaré dual (using $\RR$-coefficients).
+
+The idea is to use the analytic description of Poincare duality in \cite[Ex.\ 6.13]{roe}.
+We pick an arbitrary Riemannian metric on $M$.
+Let $T$ be any closed current of dimension $p$ and order $s$ and $g: \RR_{\geq 0} \to \RR$ rapidly decaying with $g(0) = 1$. Then the map
+\[
+	Ω^{p}_{L^2}(M) \ni α \mapsto \langle T, g(Δ) α \rangle
+\]
+corresponds via Riesz (in $L^2$) to a $β_g \in Ω^p_{L^2}(M)$. Here we use that $g(Δ)$ is smoothing so that the RHS is defined for any $α \in Ω_{L^2}^p(M)$.
+\begin{enumerate}[(i)]
+\item
+As in the notes in \cite{roe} we can see that $β_g$ is \emph{smooth} because if $α = \sum_j α_j e_j$ is the decomposition of $α$ into eigenfunctions $e_j$ of $Δ$ then
+\begin{equation}
+	\langle T, g(Δ) α \rangle = \left\langle T, \sum_j g(λ_j) α_j e_j \right\rangle = \sum_j α_j g(λ_j) \langle T, e_j \rangle
+\end{equation}
+The exchange of sum and "integral" is justified because
+\begin{equation}
+	| \langle T, e_j \rangle | \lesssim \| e_j \|_{C^s} \lesssim \| e_j \|_{H^{s + n/2 + ε}} \lesssim (1 + λ)^{s + n/2 + ε}
+\end{equation}
+and this also shows that the coefficients of $β_g$ are rapidly decreasing.
+
+\item
+As in \cite{roe} we also see that $\d \star β_g$ is closed and $[\star β_g] \in H^p_\mathrm{dR}(M)$ does not depend on the choice of $g$.
+
+We conclude by taking $g(λ) = e^{-t λ}$ and letting $t \to 0$ that
+\[
+	\langle [α] \smile [\starβ_g], [M] \rangle = \langle T, α \rangle
+\]
+so $[T] = \pm [\star β_g]$ in de Rham cohomology. In particular $[\star β_g]$ does not depend on the metric on $M$.
+
+
+\item \label{it:supp}
+As in \cite{roe} we can take $g(λ) = f(\sqrt{λ})$ for an even $f$ with $f(0) = 1$ and a smooth Fourier transformation supported in $[-ε, ε]$ to get $\supp β_g ⊆ B_ε(\supp T)$.
+
+
+\item \label{it:fiber}
+	Now reduce to the case where $T = [Z]$ is the current of integration over a $k$-dimensional subset. Now consider $W \relcpt V \relcpt Z_{sm}$ and let $U$ be a (small) tubular neighborhood of $V$. Let $ε$ be such that $B_ε(W) \relcpt U$ and pick a metric on $M$ that has product form over the tubular neighborhood. Then for the $g$ described above, $\star β_g$ has integral $1$ over every fiber over $W$ (with correct orientation).
+	\begin{proof}
+		Let $π: U \to V$ be the projection of this tubular neighborhood. It suffices to show that for every $χ \in Ω^{2k}(W)$ we have
+		\[
+			\int_W χ\, π_*(\star β_g) = \int_W χ
+		\]
+		This is local so we can assume that $W$ and  $V$ are balls, so $U \cong V \times F$.
+		Now we compute, using a roll-off $ψ \in C^\infty_c(B_{2ε}(Z))$ satisfying $ψ \equiv 1$ in a neighborhood of $ \overline{B_ε(W)} $
+		\begin{align}
+			\int_W χ\, π_*(\star β_g) &= \int_M π^* χ \star β_g = \left( ψ π^* χ, \star β_g\right) = \int_V g(Δ) (ψ π^* χ) \\
+											   &= \int_V g(Δ_V) χ \\
+											   &= \int_V χ
+		\end{align}
+		To go from the first to the second line we first use that the roll-off with $ψ$ doesn't affect the integral because it happens at a distance further than $ε$ of $V$. Then we embed $V$ and $F$ isometrically in a compact manifold (cf.\ \cite[p.\ 128]{roe}) and use \cref{thm:prodRM}. To get to the last line, we use that in a compact manifold the integral of a top form only depends on the harmonic part, so $\int_V g(Δ_V)χ = g(0) \int_V χ = \int_V χ$.
+	\end{proof}
+\end{enumerate}
+
+We can now see that $[\star β_g]$ induces the same map $H_{2n - 2k}(M; \ZZ) \to \ZZ$ as $Z \bullet -$. Indeed, for any closed chain $C \in C_{2n-2k}(M; \ZZ)$ the number $Z \bullet C$ is obtained by homotoping $C$ to $C'$ which has transverse intersection with $Z_\mathrm{reg}$ and counting them with orientation. This will give the same result as $\int_C \star β_g$.
+
+\medskip
+\begin{enumerate}[(i),resume]
+	\item If $Y$ and $Z$ are analytic subsets of complementary dimension intersecting transversely then $\langle [Z] \smile [Y], [M] \rangle = |Z \cap Y|$.
+		\begin{proof}
+			As explained above, we can get forms $β_g, γ_h$ for functions $g, h$ that are cohomologous to $[Z], [Y]$ respectively. Now pick a small tubular neighborhood of $Y_\mathrm{reg}$ that looks like $Y \times Z$ around the intersections an construct $γ_h$ as in \labelcref{it:supp,it:fiber}. Further pick $g(λ) = e^{-tλ}$. Then
+			\[
+				\int_M \star β_g \wedge \star γ_h = \int_Z e^{-tΔ} \star γ_h = \int_Z \star γ_h = |Z \cap Y|
+			\]
+			For the second to last equality we used that the value of the integral is independent of $t$.
+		\end{proof}
+		If know that $F(Y_\mathrm{reg})$ and $Z$ intersect transversely and $F(Y_\mathrm{sing}) \cap Z = \emptyset$, for $F \simeq \id$ a diffeomorphism of $M$ we can also conclude that $\langle [Z] \smile [Y], [M] \rangle = \langle [Z] \smile F_* [Y], [M] \rangle = |Z \cap F(Y)|$: We pick the nbh of $Y_\mathrm{reg}$ looking like $Y \times F^{-1}(Z)$ and obtain
+		\begin{equation}
+			\int_M \star β_g \wedge F_*(\star γ_h) = \int_Z F_*(\starγ_h) = |F^{-1}(Z) \cap Y| = |Z \cap F(Y)|
+		\end{equation}
+
+	\item More generally, if $Y$ and $Z$ intersect transversely in a dense subset of $Y \cap Z$ then
+		%outside of a nowhere dense subset $A ⊂ Y \cap Z$ then
+		\begin{equation}
+			[Y] \smile [Z] = [Y \cap Z]
+		\end{equation}
+		\begin{proof}
+			Let $\codim Y = m, \codim Z = k$. We show that the pairing of both sides with a $[C] \in H_{m+k}(M)$ is equal.
+
+			By \cref{thm:trans_intersect}, the set $A$ where the intersection is not transverse is an analytic set that necessarily has codimension larger that $Y \cap Z$. Therefore, we can homotope $C$ such that it avoids $A$ (since $\dim A < \dim X \cap Y = m + k - n$) and intersects $Y \cap Z$ transversely, hence in finitely many isolated points. Around each of these points we can find coordinates a coordinate ball $U$ in which $Y$ looks like $\CC^{n-m} \times \mathbf{0}$, $Z$ looks like $\mathbf{0} \times \CC^{n-k}$ and $C$ looks like $\CC^k \times \mathbf{0} \times \CC^m$. Pick the metric to coincide with the standard metric in a $2ε$-neighborhood of the intersection point and pick $β_g, γ_h$ as in \labelcref{it:supp,it:fiber} to be supported in $B_ε(Y)$ bzw.\ $B_ε(Z)$.
+
+			Now the form $\star β_g$ is invariant under $i: \RR^{2n} \to \RR^{2n}$ flipping the sign of one of the first $2(n-m)$ coordinates because for any $ψ \in Ω^*(\RR^{2n})$
+			\begin{equation}
+				\int_U ψ \wedge i_* \star β_g = - \int_U i^* ψ \wedge \star β_g = - \int\limits_{Z \cap U} i_* g(Δ) ψ = \int\limits_{Z \cap U} g(Δ) ψ \p
+			\end{equation}
+			This means that coordinate expansion of $\star β_g$ only contains wedges of $\d x^i$ for $i > 2(n-m)$ and analogously $\star γ_h$ only contains wedges of $\d x^j$ for $j \leq 2k$. Therefore the integral of $\star β_g \wedge \star γ_h$ over $C \cap U$ factors as
+			\begin{equation}
+				\int\limits_{C \cap U} \star β_g \wedge \star γ_h = \left(\quad\smashop{\int_{\quad(\CC^k \times \mathbf{0}) \cap U}} \star β_g\right) \left(\quad \smashop{\int_{\quad(\mathbf{0} \times \CC^m) \cap U}} \star γ_h \right) = 1 \cdot 1 = 1 \p
+			\end{equation}
+			Hence we conclude that $\langle [Y] \smile [Z], C \rangle = |Y \cap Z \cap C| = \langle [Y \cap Z], [C] \rangle$.
+		\end{proof}
+\end{enumerate}
+
+% ------------------------------------------------------------------------------
+% Symmetric products
+% ------------------------------------------------------------------------------
+\section{Symmetric products}%
+\label{sec:symmetric_products}
+The $d$-th symmetric product of a Riemann surface $C$ is introduced in \cite[p.\ 236]{GH}. We want to show:
+\begin{lem}
+	If $C$ is a Riemann surface $X$ some complex manifold and $F: C^d \to X$ is a symmetric map, then the factoring of $F$ through $C^{(d)}$ is holomorphic.
+\end{lem}
+
+\begin{proof}
+	It suffices to consider the case $X = \CC$. Around a point in $C^d$ were say the first $k$ points coincide we just Taylor expand $F$. Each Taylor polynomial then is symmetric in $z_1, \dots z_k$ and can therefore be written in terms of the elementary symmetric polynomials in $z_1, \dots, z_k$, which are the coordinates on $C^{(d)}$.
+\end{proof}
+
+\begin{lem}
+	Let $L$ be a holomorphic line bundle of degree $d$ on a Riemann surface $C$. Then the map $\bbP(H^0(C, L)) \to C^{(d)}, s \mapsto Z(s)$ is holomorphic.
+\end{lem}
+\begin{proof}
+	Let $s_1, \dots, s_n \in H^0(C, L)$ be a basis. Let $U ⊆ C$ be a trivializing open set for $L$ and by abuse consider $s_1, \dots, s_n$ to be functions on $U$. Consider
+	\[
+		f: (\CC^n - \{0\}) \times U \to \CC, (λ, x) \mapsto λ_1 s_1(x) + \dots + λ_n s_n(x)
+	\]
+
+	Since $λ_1 s_1 + \dots + λ_n s_n$ is nonvanishing this can be locally written as a nonzero holomorphic function times Weierstraß polynomial in $x$ with coefficients holomorphic in $λ$. These coefficients are the elementary symmetric polynomials of the zeros and so the claim follows.
+\end{proof}
+
+
+\begin{prop}
+	The map $C^{(d)} \to \Pic(C)$ is continuous.
+\end{prop}
+\begin{proof}
+	If suffices to show that for any/some $p \in C$ the map $f: C^{(d)} \to \Pic^0(C), D \mapsto D - d \cdot p$ is continuous around any $D \in C^{(d)}$.
+	Let $\fU$ be a good cover of $C$ s.t.\ $p$ and every point of $D$ is covered by only one set. The relevant diagram is
+	\begin{equation}
+	\begin{tikzcd}[sep=large]
+		C^0(\fU, \cO) \arrow[d] \arrow[r] & C^0(\fU, \cO^*)  \arrow[d] \\
+		Z^1(\fU, \cO) \arrow[r] \arrow[d, two heads] & Z^1(\fU, \cO^*) \arrow[r, "δ ∘ \log"] \arrow[d, two heads] & Z^2(\fU, \ZZ) \arrow[d, two heads]  \\
+		\check{H}^1(\fU, \cO) \arrow[r] & \check{H}^1(\fU, \cO^*) \arrow[r] & \check{H}^2(\fU, \ZZ)
+	\end{tikzcd}
+	\end{equation}
+	All of the Čech cycle groups are equipped with the compact-open topology.
+	$H^1(X, \cO) \cong \check{H}^1(\fU, \cO)$ has the quotient topology from the left vertical map (because $Z^0(\fU, \cO)$ and $Z^1(\fU, \cO)$ are Frechet spaces and their quotient is finite).
+	
+	Now choose a log branch on every intersection of $\fU$.
+	%The map $d = δ ∘ \log: Z^1(\fU, \cO^*) \to Z^2(\fU, \bbZ)$ is continuous i.e.\ locally constant.
+
+	The map $f: C^{(d)} \to \Pic^0(C) \cong \check{H}^1(\fU, \cO^*)$ can be lifted to a continuous map $\tilde{f}: C^{(d)} \to Z^1(\fU, \cO^*)$ by sending $D = \sum_i n_i q_i$ to $δ$ of the 0-cycle that is $(z - q_i)^{n_i}$ in a chart centered on $q_i$ and $(z - p)^{-d}$ in a chart centered on $p$. Since $δ ∘ \log ∘ f \equiv 0$ in $ \check{H}^2(\fU, \ZZ)$, we conclude that $δ ∘ \log ∘ f = δ α$ for some $α \in C^1(\fU, \cO)$. By changing our choice of logs, we can therefore have $δ ∘ \log ∘ f = 0$, meaning that $\log ∘ f$ lands in $Z^1(\fU, \cO)$ instead of just $C^1(\fU, \cO)$. 
+
+	Pushing this down to $\check{H}^1(\fU, \cO)$ we obtain a continuous map $C^{(d)} \to \check{H}^1(\fU, \cO)$ lifting $f$, which shows that $f$ is continuous since the topology on $\Pic^0(C)$ is by definition the quotient topology coming from the map $H^1(C, \cO) \to \Pic^0(C)$.
+\end{proof}
+
+% ------------------------------------------------------------------------------
+% Quotients of Riemann surfaces
+% ------------------------------------------------------------------------------
+\section{Quotients of Riemann surfaces}%
+\label{sec:quotients_of_riemann_surfaces}
+
+\begin{prop}
+	Let $S$ be a Riemann surface s.t.\ $G := \Aut(S)|$ is finite. Then $S / G$ has the structure of a Riemann surface s.t.\ the quotient map $π : S \to S/G$ is a finite branched holomorphic covering of sheet number $|G|$. At any point $p \in S$, the fixgroup $G_p$ is cyclic of order $k$ where $k$ is the sheet number of $π$ at $p$ and acts faithfully on $T_p S$ by rotations.
+\end{prop}
+\begin{proof}
+	We start with the second statement. Let $g \in G_p$ and work in a chart around $p$. First observe that $\ord_p g < 2$ because there is a $k$ s.t.\ $g^k = \id$. Now suppose that $g'(p) = 1$, so $g(z) = z + a z^r + O(|z|^{r+1})$. Then $g^k(z) = z + k a z^r + O(|z|^{r+1})$ which contradicts $g^k = \id$. This shows that $G_p$ acts faithfully on $T_p S$ from which we conclude that is is cyclic.
+
+	To check the remaining claims, pick a chart around $z, U$ in which a generator of $G_p$ is $g(z) = e^{2π i/k}$ and shrink $U$ to be $G_p$-invariant. Then pick representants $\id = h_1, \dots, h_r$ of $G / G_p$ and use them to translate the chart to $h_i p$ - that is use charts $z∘ {h_i}^{-1}, h_i U$. The action of $G$ on these identifies $z \in U$ with $h_i e^{2π i m/k} z$ in $h_i U$. This describes a finite branched holomorphic covering where $[p]$ has $r$ preimages which are all branch points of sheet number $k$.
+\end{proof}
+
+% ------------------------------------------------------------------------------
+% Generic smoothness of hyperplane sections
+% ------------------------------------------------------------------------------
+\section{Generic smoothness of hyperplane sections}%
+\label{sec:generic_smoothness_of_hyperplane_sections}
+
+\begin{figure}
+	\center
+	\includegraphics[scale=0.5]{hyperplane.png}
+	\caption{Every proof in \cite{GH}}
+\end{figure}
+
+\begin{defn} \label{def:trans}
+	Let $Y, Z ⊆ X$ be analytic subsets of a complex manifold. We say that $X$ and $Y$ are \demph{strongly transverse} if $Y_i \trans Z_j$ for all $i, j$, where $Y_i$ denotes the $i$-th stratum of $Y$, cf.\ \cite[Prop.\ II.5.6]{demailly}.
+\end{defn}
+
+\begin{thm}[Bertini]
+	Let $X ⊆ \CP^n$ be an analytic subvariety of dimension $d$. Then the set of $P \in \Gr(k, n+1)$ s.t.\ $P$ is strongly transverse to $X$ is Zariski-open.
+\end{thm}
+\begin{proof}
+	See Stackexchange. %TODO
+\end{proof}
+
+% This is mostly wrong IIRC
+%\begin{thm}
+	%Let $X ⊆ \CP^n$ be a variety. Then the set
+	%\begin{equation}
+		%\{H \in \CP_n \mid X \trans H\}
+	%\end{equation}
+	%is Zariski-open.
+%\end{thm}
+%\begin{proof}
+	%One of the ideas here is similar to \cite[Thm.\ 8.18]{Hart}. Consider the "bad" subset of $X \times {\CP^n}^*$
+	%\begin{align}
+		%Z &= \{(x, H) \in X \times {\CP^n}^* \mid T^*_x \CP^n \to T^*_x H \oplus T^*_x X \text{ not injective}\}
+		%%\\
+		  %%&= \{(x, V(ψ)) \in X \times {\CP^n}^* \mid ψ \in \bbP({\CC^{n+1}}^*),
+	%\end{align}
+	%with the projection $π_1$ onto $X$. Here $T^*_x X = \fm_{X, x} / {\fm_{X, x}}^2$.
+
+	%\noindent
+	%\emph{Step 1: $Z$ is analytic.}
+	%Since this is a local statement, we can write $X = V(f_1, \dots, f_r)$ and $H = V(h)$ where $h$ affine function on $\CC^n$ whose coefficients depends holomorphically on $H$. The kernel of $T^*_x \CP^n \to T^*_x H$ is precisely $\d_x h$ so $(x, H) \in Z$ is equivalent to $x \in H$ and
+	%\begin{equation}
+		%\d_x h \in \ker \big[ T^*_x \CP^n \to T^*_x H \big] = \Span\{d_x f_1, \dots, \d_x f_r\} \p
+	%\end{equation}
+
+
+
+	%If we say that around $x$ the hyperplane $H$ is the vanishing set of then $(x, H) \in Z$ iff the image of $ψ$ in $T^*_x X$ is zero.
+
+
+	%Since $\dim (\im \d_x F) = \dim X =: d$, the fibers of $π_1$ are all of dimension $n - d-1$. By the "structure theorem" for holomorphic maps \cite[p.\ 142]{GunII} we see that $\dim Z = n-1$
+%\end{proof}
+
+
+%The chordal variety of a variety $X ⊂ \CP^n$ is defined in \cite[p.\ 173]{GH} by considering the set
+%\begin{equation}
+	%I(X) = \{(p, q, r) \in X \times X \times \CP^n \mid p \neq q,\, p \wedge q \wedge r = 0\} \label{eq:I}
+%\end{equation}
+%The closure $\overline{I(X)}$ is analytic because $I(X) = I_0(X) \setminus (Δ_{X} \times \CP^n)$ where
+%\begin{equation}
+	%I_0(X) = \{(p, q, r) \in X \times X \times \CP^n \mid p \wedge q \wedge r = 0\}
+%\end{equation}
+%is clearly analytic and $Δ_{X}$ denotes the diagonal in $X \times X$.
+
+%\begin{defn} \label{def:TC}
+	%Let $X ⊂ \CP^n$ be a variety and $x \in X$. The \demph{tangent cone} $\TC_x X$ of $X$ at $x$ is the set of all $z \in \CP^n$ for which there exist sequences $z_j \to z$ in $\CP^n$ and $x_j \to x$ in $X - \{x\}$ such that $z_j \in \overline{x\, x_j}$.
+
+	%We call the union
+	%\begin{equation}
+		%\TC(X) := \displaystyle\bigcup_{x \in X} \{x\} \times \TC_x X
+	%\end{equation}
+	%together with the projection $π$ onto $X$ the \demph{tangent cone bundle} of $X$.
+%\end{defn}
+
+%\begin{prop}
+	%\begin{enumerate}[(i)]
+		%\item $TC(X)$ is an analytic subset of $X \times \CP^n$. Actually $TC(X) = \overline{I(X)} \cap (Δ_X \times \CP^n)$ under the biholomorphism $X \cong Δ_X$ % This statement is wrong
+		%\item $TC(X)$ agrees with $\bbP(TX_\mathrm{reg})$ over $X_\mathrm{reg}$.
+	%\end{enumerate}
+%\end{prop}
+%\begin{proof}
+	%\begin{enumerate}[(i)]
+		%\item It suffices to prove the second statement, that is for every $x \in X$
+			%\begin{equation}
+				%\TC_x X = \overline{I(X)} \cap (\{x, x\} \times \CP^n) \p
+			%\end{equation}
+			%Consider $x \in TX_x X$. Then picking $z_j$ and $x_j$ as in \cref{def:TC} we have $(x, x_j, z_j) \in I(X)$ converging to $(x, x, z)$ proving the inclusion "$⊆$".
+
+			%Now consider a sequence $(p_j, q_j, r_j) \in I(X)$ converging to $(x, x, z)$ for some $z \in \CP^n$. We can w.l.o.g.\ assume that $q_j \in X - \{x\}$.
+	%\end{enumerate}
+%\end{proof}
+
+\begin{appendix}
+
+% ------------------------------------------------------------------------------
+% Product Riemannian manifolds
+% ------------------------------------------------------------------------------
+\section{Product Riemannian manifolds}%
+\label{sec:product_riemannian_manifolds}
+
+\begin{lem} \label{thm:prodRM}
+	Let $(M, g)$, $(N, h)$ be compact Riemannian manifolds
+
+	\begin{enumerate}[(i)]
+		\item \label{it:dense}
+			$C^\infty_c(M) ⊗ C_c^\infty(N)$ is dense in $L^2(M \times N)$
+		\item \label{it:eigen}
+			The eigenpairs of $Δ_{M \times N}$ are $(e_i \boxtimes f_k, λ_i μ_k)_{i,k}$, where $(e_i, λ_i)_i$ and $(f_k, μ_k)_k$ are the eigenpairs of $Δ_M$ and $Δ_N$ respectively.
+		\item The functional calculus satisfies $f(Δ_{M \times N}) g \boxtimes h = f(Δ_M) g \boxtimes f(Δ_N) h$
+	\end{enumerate}
+	\begin{proof}
+		\begin{enumerate}[(i)]
+			\item Use Stone-Weierstraß.
+			\item These are ON and dense by \labelcref{it:dense}.
+			\item Direct consequence of \labelcref{it:eigen}.
+		\end{enumerate}
+	\end{proof}
+\end{lem}
+
+% ------------------------------------------------------------------------------
+% Transverse intersection of analytic sets
+% ------------------------------------------------------------------------------
+\section{Transverse intersection of analytic sets}%
+\label{sec:transverse_intersection_of_analytic_sets}
+
+We take \emph{transverse} intersection of analytic sets to mean that they only intersect in their regular loci, and do so transversely (this is different from the definition in \cref{def:trans}).
+\begin{lem} \label{thm:trans_intersect}
+	If $Y, Z ⊆ M$ are analytic subsets then the set $A := \{x \in Y \cap Z \mid \textup{not } Y \trans_x Z\} ⊆ Y \cap Z$ is analytic.
+\end{lem}
+\begin{proof}
+	%$A = (Y_\mathrm{sing} \cap Z) \cup (Y \cap Z_\mathrm{sing}) \cup \{x \in Y_\mathrm{reg} \cap Z_\mathrm{reg} \mid \textup{not } Y \trans_x Z\}$. The first two sets are clearly analytic in $M$ and the second one is the intersection with $ Y_\mathrm{reg} \cap Z_\mathrm{reg}$ of the analytic set
+	%\begin{equation}
+		%\{x \in M | \d_x(F, G) \text{ does not have full rank  for all locally defining functions } F, G \in \cO_{m, x}\} \p
+	%\end{equation}
+	%\begin{equation}
+		%A = \{x \in M | \d_x(F, G) \text{ does not have full rank for all locally defining functions } F, G \in \cO_{m, x}\} \p
+	%\end{equation}
+	We mimic the proof of the fact (the special case $Z = M$) that the singular locus of analytic sets is analytic \cite[Thm.\ 4.31]{demailly}.
+
+	Assume $Y$ and $Z$ are irreducible of dimension $d_1$ and $d_2$.
+	$A$ consists of all $x \in X \cap Y$ s.t.\ the differential $\d_x(F, G)$ has rank smaller than $2n - d_1 - d_2$ for any $F = (f_1, \dots, f_r)$ and $G = (g_1, \dots, g_r)$ defining functions for $Y$ and $Z$ around $x$. This is the intersection of $X \cap Y$ with an analytic set because the ideal sheaves $\scI(Y)$ and $\scI(Z)$ are coherent and therefore locally finitely generated.
+	%(so on small open sets it suffices to consider a specific choice of $f_1, \dots, f_r$ that are generators )
+	Indeed, if $f_1, \dots, f_r$ are generators for $\scI(Y)$ and $g_1, \dots, g_r$ are generators for $\scI(Z)$ over an open set $Ω$ then we only need to check the differential $\d(f_1, \dots, f_r, g_1, \dots, g_r)$.
+
+	If $Y$ or $Z$ have several irreducible components, the intersection of any two $Y_i$ or $Z_i$ automatically lies in $A$ and the above proof still works for the remaining points.
+\end{proof}
+
+\end{appendix}
+
+\bibliographystyle{amsalpha}
+\bibliography{bib.bib}
+\end{document}

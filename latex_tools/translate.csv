@@ -1,0 +1,84 @@
+α alpha
+β beta
+γ gamma
+δ delta
+#ϵ epsilon
+ε epsilon
+#ε varepsilon
+ζ zeta
+η eta
+θ theta
+#ϑ vartheta
+ι iota
+κ kappa
+λ lambda
+μ mu
+# (upright) nu in Source Code Pro looks a lot like v
+ν nu
+ξ xi
+π pi
+#ϖ varpi
+ρ rho
+#ϱ varrho
+σ sigma
+#ς varsigma
+τ tau
+υ upsilon
+#ϕ phi
+φ phi
+#φ varphi
+# chi very similar to X in Source Code Pro
+χ chi
+ψ psi
+ω omega
+Γ Gamma
+Δ Delta
+Θ Theta
+Λ Lambda
+Ξ Xi
+Π Pi
+Σ Sigma
+#Υ Upsilon # identical to Y in many fonts
+Φ Phi
+#Χ Chi # similar to X in many fonts
+Ψ Psi
+Ω Omega
+
+⊆ subseteq
+⊂ subset
+# ≥ geq
+# ≤ leq
+∇ nabla
+∂ partial
+∘ circ
+⊗ otimes
+∧ wedge
+∅ emptyset
+
+⟨ langle
+⟩ rangle
+
+∥ |
+∀ forall
+#∃ exists
+#∈ in
+#× times
+#± pm
+#≃ simeq
+#≅ cong
+#≈ approx
+#≡ equiv
+≤ leq
+≥ geq
+≲ lesssim
+≳ gtsim
+∖ setminus
+#⊃ supset
+#⊇ supseteq
+#⊕ oplus
+ℓ ell
+#⋆ star
+#📢 displaystyle
+
+#𝛛𝜕𝝏𝞉𝟃 - default ∂
+#𝛁𝛻𝜵𝝯𝞩 - default ∇

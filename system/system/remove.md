@@ -1,0 +1,4 @@
+- texlive-humanities
+- texlive-humanities-doc
+- texlive-lang-korean
+- texlive-lang-...

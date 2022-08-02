@@ -26,10 +26,7 @@ WantedBy=multi-user.target
     EVENTS:
       EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
 ```
-
-- In 22.04 this requires installing libyaml v0.6 manually, e.g. from [here](http://ftp.de.debian.org/debian/pool/main/y/yaml-cpp/libyaml-cpp0.6_0.6.3-9_amd64.deb)
  
-
 # ydotool
 - `_ systemctl enable /usr/lib/systemd/user/ydotool.service`
 `/usr/lib/systemd/user/ydotool.service`
@@ -49,9 +46,3 @@ TimeoutSec=180
 WantedBy=default.target
 ```
 
-
-# Tilting the laptop enable airplane mode
-- Before 22.04 [this](https://askubuntu.com/questions/965595/why-does-airplane-mode-keep-toggling-on-my-hp-laptop-in-ubuntu-18-04/965596#965596) was a fix
-- Now the culprit seems to be the device at `/sys/devices/platform/INT33D5:00` bzw `/dev/input/event21`
-- `modprobe -r intel_hid` fixes this behavior (although the system now is oblivious to being in table mode)
-- the fix from askubuntu is still necessary to prevent toggling of airplane mode after resuming from closing the lid

@@ -1,4 +1,4 @@
-let g:UNICODE_ENABLED=0
+let g:UNICODE_ENABLED=1
 
 function! TexSetup()
     " https://castel.dev/post/lecture-notes-1

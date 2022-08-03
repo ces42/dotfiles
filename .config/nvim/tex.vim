@@ -221,7 +221,6 @@ function! AlwaysMath()
     endfunction
 endfunction
 
-
 function! tex#add_delim_modifiers(width) abort " {{{1
   call vimtex#util#undostore()
   if a:width != 0

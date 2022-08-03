@@ -34,7 +34,7 @@ set shiftwidth=4
 "END
 
 call plug#begin()
-    Plug 'lervag/vimtex', {'for': 'tex'} " TeX stuff
+    Plug 'lervag/vimtex' " TeX stuff
     "Plug 'Valloric/YouCompleteMe' " Python, C++, ... autocompletion
     "Plug 'vim-airline/vim-airline' " fancy statusbar
     Plug 'nvim-lualine/lualine.nvim'
@@ -206,6 +206,7 @@ so ~/.config/nvim/tex.vim
 "au FileType tex let b:AutoPairs = AutoPairsDefine({'$' : '$'})
 "}}}
 
+
 " FireNVim {{{
 if exists('g:started_by_firenvim')
     let g:timer_started = v:false
@@ -222,28 +223,47 @@ if exists('g:started_by_firenvim')
         call timer_start(a:delay, 'My_Write')
     endfunction
 
+    function! Firenvim_get_text()
+        if exists('g:status') && g:status == 'translate'
+            return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
+        end
+        " else
+        return nvim_buf_get_lines(0, 0, -1, 0)
+    endfunction
+
+    function Firenvim_translate() abort
+        return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
+    endfunction
+
     augroup FireNVim
+        
         au!
-        "py3 from translate_tex_chr import tr_restore_buffer
+        py3 from translate_tex_chr import tr_restore_buffer, tr_write
 
         " TeXnique
         au BufEnter firenvim_texnique_*.tex call AlwaysMath()
-        "au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG$
-        "au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG
+        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG$
+        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcGhello!<esc>
+        
+        au BufEnter firenvim_texnique_*.tex let g:status = 'translate'
+        "au BufEnter firenvim_texnique_*.tex function! Firenvim_get_text() abort
+        "                                  "\     return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
+        "                                  \     return ["AAA"]
+        "                                  \ endfunction
         "au BufWritePre firenvim_texnique_*.tex py3 tr_change_buffer('unix')
         "au BufWritePost firenvim_texnique_*.tex py3 tr_restore_buffer()
-        "au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(500)
-        "au TextChanged firenvim_texnique_*.tex call Delay_My_Write(500)
+        au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(500)
+        au TextChanged firenvim_texnique_*.tex call Delay_My_Write(500)
         "au BufWrite firenvim_texnique_*.tex %s/\$//ge
         "au BufWrite firenvim_texnique_*.tex lua expand_font_macros()
         "au BufEnter firenvim_texnique_*.tex normal i$
         
         " Stackexchange
-        "au BufWrite firenvimSE_*.tex lua expand_font_macros()
-        "au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
-        "au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
-        "au TextChangedI firenvimSE_*.tex call Delay_My_Write(5000)
-        "au TextChanged firenvimSE_*.tex call Delay_My_Write(5000)
+        au BufWrite firenvimSE_*.tex lua expand_font_macros()
+        au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
+        au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
+        au TextChangedI firenvimSE_*.tex call Delay_My_Write(5000)
+        au TextChanged firenvimSE_*.tex call Delay_My_Write(5000)
 
         au BufEnter * set nonumber
         "au BufWrite SE_*.tex lua expand_font_macros()
@@ -554,6 +574,8 @@ imap <f5> <C-o>:w<bar>make<cr>
 
 nnoremap <F3> :%s//g<Left><Left>
 inoremap <F3> <Esc>:%s//g<Left><Left>
+
+nnoremap g/ /\c<left><left>
 " }}}
 
 " file type settings {{{
@@ -615,10 +637,10 @@ augroup vimrcEx
     " When editing a file, always jump to the last known cursor position.
     " Don't do it for commit messages, when the position is invalid, or when
     " inside an event handler (happens when dropping a file on gvim).
-    "autocmd BufReadPost *
-    "            \ if &ft != 'gitcommit' && line("'\"") > 0 && line("'\"") <= line("$") |
-    "            \   exe "normal g`\"" |
-    "            \ endif
+    autocmd BufReadPost *
+                \ if &ft != 'gitcommit' && line("'\"") > 0 && line("'\"") <= line("$") |
+                \   exe "normal g`\"" |
+                \ endif
 augroup END
 
 " remember marks

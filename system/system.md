@@ -55,3 +55,10 @@ WantedBy=default.target
 - Now the culprit seems to be the device at `/sys/devices/platform/INT33D5:00` bzw `/dev/input/event21`
 - `modprobe -r intel_hid` fixes this behavior (although the system now is oblivious to being in table mode)
 - the fix from askubuntu is still necessary to prevent toggling of airplane mode after resuming from closing the lid
+- make permanent with `echo 'blacklist intel_hid' > /etc/modprobe.d/blacklist-intel_hid.conf`
+
+# xsuspender
+- config in `.config/xsuspender.conf`
+- currently (2. 8. 22) suspending Discord after 120 seconds of being unfocused
+- manually compiled to fix [this issue](https://github.com/kernc/xsuspender/issues/38) (hardcode subdirectory to look in)
+- currently (2. 8. 22) not in autostart

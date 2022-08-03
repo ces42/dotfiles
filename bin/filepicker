@@ -4,7 +4,7 @@ IFS='
 '
 PATH="$PATH:$HOME/.fzf/bin"
 tput smkx
-IGNORES=(--no-ignore-vcs -E '{*.aux,*.fls,*.out,*.fdb_latexmk,*.synctex.gz}')
+IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.out,*.fdb_latexmk,*.synctex.gz}')
 out=$(
 fd -L "${IGNORES[@]}" | fzf \
 		--multi \

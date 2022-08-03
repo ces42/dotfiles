@@ -1,0 +1,12 @@
+alias ls='ls --hyperlink=always --color=tty'
+alias l='ls -lhH'
+alias psg='ps -A | grep'
+alias pip='sudo pip3'
+alias pylab="ipython3 --pylab=qt5 --profile=pylab"
+alias primefac='python3 -m primefac'
+alias dfh='df -h'
+alias euro="echo 'CurrencyConvert[Quantity[1, \"Euros\"], \"USDollars\"]' | math | grep -oP '\d+(\.\d+)?(?= US dollars)' | xargs printf '$%.3f\n'"
+alias :q=exit
+alias sl='sl -e'
+alias hg='kitty +kitten hyperlinked_grep'
+alias _hg='_rg'

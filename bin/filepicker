@@ -4,13 +4,13 @@ IFS='
 '
 PATH="$PATH:$HOME/.fzf/bin"
 tput smkx
-IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.out,*.fdb_latexmk,*.synctex.gz}')
+IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.toc,*.out,*.fdb_latexmk,*.synctex.gz}')
 out=$(
 fd -L "${IGNORES[@]}" | fzf \
 		--multi \
 		--reverse \
 		--preview '{ [ -d {} ] && ls -alh --color=always {} } || { [[ $(file --mime {}) =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {}) =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime {}) =~ binary ]] && echo binary file, $(du -kh {} | cut -f1)B && ls -lah {} } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }' \
-		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word" \
+		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
 		--bind "alt-d:change-prompt(D> )+reload(fd -L --type d $IGNORES)" \
 		--bind "alt-f:change-prompt(F> )+reload(fd -L --type f $IGNORES)"\
 		--bind "f5:reload(fd -L $IGNORES)" \

@@ -1,4 +1,9 @@
 #!/bin/bash
 ID=$(xinput list | grep '⎜   ↳ SYNA32A2:00 06CB:CE17 Touchpad  ' | grep -oP '(?<=id\=)\d+')
-stat=$(xinput list-props $ID | grep 341 | grep -oP '\d$')
-xinput set-prop $ID 341 $((1-$stat))
+scroll=$(xinput list-props $ID | grep -i 'horizontal scroll')
+stat=$(echo $scroll | grep -oP '\d$')
+num=$(echo $scroll | grep -oP '(?<=\()\d+(?=\))')
+echo $stat
+echo $ID
+echo $num
+xinput set-prop $ID $num $((1-$stat))

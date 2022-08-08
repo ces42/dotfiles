@@ -57,7 +57,7 @@ call plug#begin()
     Plug 'vim-python/python-syntax', {'for': 'python'}
     Plug 'tpope/vim-scriptease'
     "Plug  'tweekmonster/startuptime.vim'
-    Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
+    Plug 'ces42/firenvim', { 'do': { _ -> firenvim#install(0) } }
     "Plug 'klen/python-mode'
     "Plug 'mhinz/vim-startify' " fancy start screen
     "Plug 'ap/vim-css-color'
@@ -84,20 +84,20 @@ call plug#end()
     "let g:ycm_min_num_of_chars_for_completion=4
 
     " airline {{{
-    "if !exists('g:airline_symbols')
-    "   let g:airline_symbols = {}
-    "endif
-    "let g:airline_symbols.maxlinenr = '' " used to be '㏑'
-    "let g:airline_symbols.linenr = ' ' " used to be '☰'
-    "let g:airline_symbols.colnr = ':'
-    "let g:airline_symbols.dirty='⚡'
-    "let g:airline_symbols.branch = ''
-    "let g:airline#extensions#fzf#enabled = 1
-    ""let g:airline_powerline_fonts = 1
-    "let g:airline#extensions#whitespace#mixed_indent_algo = 2
-    "let g:airline#extensions#whitespace#trailing_format = 'tr:%s'
-    "let g:airline#extensions#whitespace#mixed_indent_file_format = 'mi:%s'
-    "let g:airline#extensions#wordcount#formatter#default#fmt = '%sW'
+    if !exists('g:airline_symbols')
+       let g:airline_symbols = {}
+    endif
+    let g:airline_symbols.maxlinenr = '' " used to be '㏑'
+    let g:airline_symbols.linenr = ' ' " used to be '☰'
+    let g:airline_symbols.colnr = ':'
+    let g:airline_symbols.dirty='⚡'
+    let g:airline_symbols.branch = ''
+    let g:airline#extensions#fzf#enabled = 1
+    "let g:airline_powerline_fonts = 1
+    let g:airline#extensions#whitespace#mixed_indent_algo = 2
+    let g:airline#extensions#whitespace#trailing_format = 'tr:%s'
+    let g:airline#extensions#whitespace#mixed_indent_file_format = 'mi:%s'
+    let g:airline#extensions#wordcount#formatter#default#fmt = '%sW'
     " }}}
 
     let g:pymode_python = 'python3'
@@ -231,10 +231,6 @@ if exists('g:started_by_firenvim')
         return nvim_buf_get_lines(0, 0, -1, 0)
     endfunction
 
-    function Firenvim_translate() abort
-        return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
-    endfunction
-
     augroup FireNVim
         
         au!
@@ -242,8 +238,7 @@ if exists('g:started_by_firenvim')
 
         " TeXnique
         au BufEnter firenvim_texnique_*.tex call AlwaysMath()
-        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG$
-        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcGhello!<esc>
+        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG
         
         au BufEnter firenvim_texnique_*.tex let g:status = 'translate'
         "au BufEnter firenvim_texnique_*.tex function! Firenvim_get_text() abort
@@ -252,18 +247,19 @@ if exists('g:started_by_firenvim')
         "                                  \ endfunction
         "au BufWritePre firenvim_texnique_*.tex py3 tr_change_buffer('unix')
         "au BufWritePost firenvim_texnique_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(500)
-        au TextChanged firenvim_texnique_*.tex call Delay_My_Write(500)
+        au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(100)
+        au TextChanged firenvim_texnique_*.tex call Delay_My_Write(100)
         "au BufWrite firenvim_texnique_*.tex %s/\$//ge
         "au BufWrite firenvim_texnique_*.tex lua expand_font_macros()
         "au BufEnter firenvim_texnique_*.tex normal i$
         
         " Stackexchange
-        au BufWrite firenvimSE_*.tex lua expand_font_macros()
-        au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
-        au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvimSE_*.tex call Delay_My_Write(5000)
-        au TextChanged firenvimSE_*.tex call Delay_My_Write(5000)
+        au BufEnter firenvimSE_*.tex let g:status = 'translate'
+        au BufWritePre firenvimSE_*.tex lua expand_font_macros()
+        "au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
+        "au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
+        au TextChangedI firenvimSE_*.tex call Delay_My_Write(2000)
+        au TextChanged firenvimSE_*.tex call Delay_My_Write(2000)
 
         au BufEnter * set nonumber
         "au BufWrite SE_*.tex lua expand_font_macros()
@@ -367,7 +363,7 @@ set shortmess-=F " show file info when opening
 set shortmess-=T " don't truncate messages
 
 " show warning when search wraps
-" set shortmess += S " this disables the match counter :/
+set shortmess+=S " this disables the match counter :/
 
 set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
 " }}}
@@ -592,7 +588,7 @@ au Filetype vim set
             \ softtabstop=4
             \ expandtab
 
-autocmd FileType markdown let g:airline#extensions#whitespace#checks = [ 'indent' ]
+"autocmd FileType markdown let g:airline#extensions#whitespace#checks = [ 'indent' ]
 
 " vim-commentary
 au FileType * let b:commentary_format=&commentstring
@@ -616,9 +612,9 @@ augroup cursor
 augroup END
 
 set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175 " from :h guicursor
-hi Search ctermfg=15
-hi IncSearch ctermbg=40
-hi WarningMsg ctermfg=white ctermbg=darkred cterm=bold "to make search wrapping more obvious
+"hi Search ctermfg=15
+"hi IncSearch guibg=#30e060
+hi WarningMsg guifg=white guibg=red gui=bold "to make search wrapping more obvious
 hi SpellBad cterm=undercurl ctermbg=none gui=undercurl guisp=red
 hi SpellCap cterm=undercurl ctermbg=none guisp=lightblue
 hi SpellLocal cterm=undercurl ctermbg=none guisp=cyan

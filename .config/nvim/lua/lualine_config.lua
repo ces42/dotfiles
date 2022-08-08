@@ -17,17 +17,66 @@ local function search_indicator()
     else
         disp = string.sub(s, 1, 11) .. '…'
     end
-    return '/' .. disp .. ' %3p%%'
+    return '/' .. disp -- .. ' %3p%%'
 end
 
-local function modified()
-  if vim.bo.modified then
-    return '+'
-  elseif vim.bo.modifiable == false or vim.bo.readonly == true then
-    return '-'
-  end
-  return ''
+-- local function modified()
+--   if vim.bo.modified then
+--     return '+'
+--   elseif vim.bo.modifiable == false or vim.bo.readonly == true then
+--     return '-'
+--   end
+--   return ''
+-- end
+
+-- https://github.com/nvim-lualine/lualine.nvim/issues/335#issuecomment-916759033 {{{
+local custom_fname = require('lualine.components.filename'):extend()
+local highlight = require'lualine.highlight'
+local default_status_colors = {
+  --saved = '#228B22',
+  modified = '#c00060'
+}
+
+function custom_fname:init(options)
+  custom_fname.super.init(self, options)
+  self.status_colors = {
+    saved = highlight.create_component_highlight_group(
+      {bg = default_status_colors.saved}, 'filename_status_saved', self.options),
+    modified = highlight.create_component_highlight_group(
+      {bg = default_status_colors.modified, fg='#eff810'}, 'filename_status_modified', self.options),
+  }
+  if self.options.color == nil then self.options.color = '' end
 end
+
+function custom_fname:update_status()
+  local data = custom_fname.super.update_status(self)
+  data = highlight.component_format_highlight(vim.bo.modified
+                                              and self.status_colors.modified
+                                              or self.status_colors.saved) .. data
+  return data
+end
+--}}}
+
+-- https://github.com/nvim-lualine/lualine.nvim/issues/186#issuecomment-968392445 {{{
+local function search_cnt()
+  local res = vim.fn.searchcount()
+  
+  if res.total > 0 then
+      local s = vim.fn.getreg("/")
+      disp = ''
+      if string.len(s) <= 12 then
+          disp = s
+      else
+          disp = string.sub(s, 1, 11) .. '…'
+      end
+      return string.format("%s/%d /%s", res.current, res.total, disp)
+  else 
+      return ""
+  end
+end
+
+-- }}}
+
 
 require'lualine'.setup {
   options = {
@@ -41,9 +90,12 @@ require'lualine'.setup {
   sections = {
     lualine_a = {'mode'},
     lualine_b = {'branch', 'diff', 'diagnostics'},
-    lualine_c = {{ 'filename', file_status = false, path = 1 }, {modified, color = {bg = '#FF4C51', fg='#FFFFFFF', gui = 'bold'}}},
+    lualine_c = {
+      { custom_fname, file_status = true, path = 1 },
+      --{modified, color = {bg = '#FF4C51', fg='#FFFFFFF', gui = 'bold'}}
+    },
     lualine_x = {'encoding', 'fileformat', 'filetype'},
-    lualine_y = {search_indicator},
+    lualine_y = {'progress', search_cnt},
     --lualine_y = {'progress'}
     lualine_z = {'location'}
   },

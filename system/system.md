@@ -62,3 +62,12 @@ WantedBy=default.target
 - currently (2. 8. 22) suspending Discord after 120 seconds of being unfocused
 - manually compiled to fix [this issue](https://github.com/kernc/xsuspender/issues/38) (hardcode subdirectory to look in)
 - currently (2. 8. 22) not in autostart
+
+# Pandoc
+- needs perl modules that get install w/ `_ cpan install Pandoc::Elements`
+- However the test for these fail (I vaguely remember the fail to be a "false negative"?) so we need `_ cpan install -f Pandoc::Elements`
+- also needs `_ pip3 install pandoc-secnos`
+
+# stop screen from rotating when closing lid
+- https://askubuntu.com/questions/1191182/screen-rotates-90-degrees-after-shutting-lid#1191269
+- reinstall `iio-sensor-proxy`

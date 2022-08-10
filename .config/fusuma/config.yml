@@ -2,42 +2,103 @@
 # ctrl = 29, shift = 42, alt = 56, super = 125, escape = 1
 swipe:
     3:
+        begin: 
+          command: |-
+              if [ $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4) = 'Evince' ]; then
+                  logger 'fusuma: setting evince flag'
+                  touch "/var/run/user/$(id -u)/fusuma-3finger-evince"
+                  logger 'fusuma: pressing alt'
+                  ydotool key --key-delay 0 56:1 # left alt
+              fi
+          interval: 0.1
+        end:
+          command: |-
+              rm "/var/run/user/$(id -u)/fusuma-3finger-evince" && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
         left:
-          # begin: 
-          #   command: 'ydotool key --key-delay 1 56:1'
-          # update:
-          #   command: 'xdotool key Tab'
           update:
             #sendkey: "LEFTCTRL+NEXT"
             # command: xte 'keydown Control_L' 'key Next' 'keyup Control_L'
             command: |-
-                window=$(xdotool getactivewindow)
-                case $(xprop -id $window WM_CLASS | cut -d \" -f 4) in
+                window=$(xdotool getactivewindow || echo 'FAIL')
+                if [ $window = 'FAIL' ]; then
+                    logger 'fusuma: FAIL'
+                    if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
+                            [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
+                        logger 'fusuma: this is evince'
+                        NAME='Evince'
+                    else
+                        NAME='unknown'
+                    fi
+                else
+                    NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
+                fi
+                case $NAME in
                     Spotify)
+                        logger 'fusuma key: AudioNext'
                         xte 'key XF86AudioNext'
                         ;;
+                    Evince)
+                        logger 'fusuma key: `'
+                        ydotool key --key-delay 0 41:1 41:0 # grave (`)
+                        ;;
                     *)
-                        ydotool key --key-delay 0 29:1 109:1 109:0 29:0
+                        logger 'fusuma key ctrl+PgDown'
+                        ydotool key --key-delay 0 29:1 109:1 109:0 29:0 # ctrl and PgDown
                         ;;
                 esac
-            threshold: 1.1
+            threshold: 1.0
             interval: 1.6
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
             # command: xte 'keydown Control_L' 'key Prior' 'keyup Control_L'
-            command:  |-
-                window=$(xdotool getactivewindow)
-                case $(xprop -id $window WM_CLASS | cut -d \" -f 4) in
+            command: |-
+                window=$(xdotool getactivewindow || echo 'FAIL')
+                if [ $window = 'FAIL' ]; then
+                    logger 'fusuma: FAIL'
+                    if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
+                            [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
+                        logger 'fusuma: this is evince'
+                        NAME='Evince'
+                    else
+                        NAME='unknown'
+                    fi
+                else
+                    NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
+                fi
+                case $NAME in
                     Spotify)
+                        logger 'fusuma key: AudioPrev'
                         xte 'key XF86AudioPrev'
                         ;;
+                    Evince)
+                        logger 'fusuma key: shift+`'
+                        ydotool key --key-delay 0 42:1 41:1 41:0 42:0 # sfhit + grave (`)
+                        ;;
                     *)
-                        ydotool key --key-delay 0 29:1 104:1 104:0 29:0
+                        logger 'fusuma key ctrl+PgUp'
+                        ydotool key --key-delay 0 29:1 104:1 104:0 29:0 # ctrl and PgDown
                         ;;
                 esac
-            threshold: 1.1
+            threshold: 1.0
             interval: 1.6
+    # 3:
+    #     begin:
+    #       command: xdotool keydown Alt
+    #       threshold: 0.1
+    #       interval: 0.1
+    #     right:
+    #       update:
+    #         command: xdotool key Shift+grave
+    #         threshold: 1.0
+    #         interval: 1.6
+    #     left:
+    #       update:
+    #         command: xdotool key grave
+    #         threshold: 1.0
+    #         interval: 1.6
+    #     end:
+    #       command: xdotool keyup Alt
         up:
           #update:
             #command: xte 'keydown Control_L' 'key F4' 'keyup Control_L'

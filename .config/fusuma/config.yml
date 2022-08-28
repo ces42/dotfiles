@@ -1,37 +1,42 @@
 # look at /usr/include/linux/input-event-codes.h to find keycodes for ydotool
-# ctrl = 29, shift = 42, alt = 56, super = 125, escape = 1
+# ctrl = 29, shift = 42, alt plugin: 
+inputs:
+    libinput_command_input:
+        enable-tap: true
+        verbose: true= 56, super = 125, escape = 1
 swipe:
     3:
-        begin: 
+        begin:
           command: |-
-              if [ $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4) = 'Evince' ]; then
-                  logger 'fusuma: setting evince flag'
-                  touch "/var/run/user/$(id -u)/fusuma-3finger-evince"
+              wname=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4 | tee "/var/run/user/$(id -u)/fusuma-3finger")
+              logger 'fusuma: window='$wname
+              if [ $wname = 'Evince' ]; then
                   logger 'fusuma: pressing alt'
                   ydotool key --key-delay 0 56:1 # left alt
               fi
           interval: 0.1
         end:
           command: |-
-              rm "/var/run/user/$(id -u)/fusuma-3finger-evince" && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
+              [ $(cat "/var/run/user/$(id -u)/fusuma-3finger") = 'Evince' ] && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
         left:
           update:
             #sendkey: "LEFTCTRL+NEXT"
             # command: xte 'keydown Control_L' 'key Next' 'keyup Control_L'
             command: |-
-                window=$(xdotool getactivewindow || echo 'FAIL')
-                if [ $window = 'FAIL' ]; then
-                    logger 'fusuma: FAIL'
-                    if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
-                            [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
-                        logger 'fusuma: this is evince'
-                        NAME='Evince'
-                    else
-                        NAME='unknown'
-                    fi
-                else
-                    NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
-                fi
+                # window=$(xdotool getactivewindow || echo 'FAIL')
+                # if [ $window = 'FAIL' ]; then
+                #     logger 'fusuma: FAIL'
+                #     if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
+                #             [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
+                #         logger 'fusuma: this is evince'
+                #         NAME='Evince'
+                #     else
+                #         NAME='unknown'
+                #     fi
+                # else
+                #     NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
+                # fi
+                NAME=$(cat "/var/run/user/$(id -u)/fusuma-3finger")
                 case $NAME in
                     Spotify)
                         logger 'fusuma key: AudioNext'
@@ -47,25 +52,26 @@ swipe:
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.6
+            interval: 1.8
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
             # command: xte 'keydown Control_L' 'key Prior' 'keyup Control_L'
             command: |-
-                window=$(xdotool getactivewindow || echo 'FAIL')
-                if [ $window = 'FAIL' ]; then
-                    logger 'fusuma: FAIL'
-                    if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
-                            [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
-                        logger 'fusuma: this is evince'
-                        NAME='Evince'
-                    else
-                        NAME='unknown'
-                    fi
-                else
-                    NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
-                fi
+                # window=$(xdotool getactivewindow || echo 'FAIL')
+                # if [ $window = 'FAIL' ]; then
+                #     logger 'fusuma: FAIL'
+                #     if [ -f  "/var/run/user/$(id -u)/fusuma-3finger-evince" ] &&
+                #             [ $(xprop -id $(xdotool getwindowfocus) _NET_WM_NAME | cut -d \" -f 2) = 'gnome-shell' ]; then
+                #         logger 'fusuma: this is evince'
+                #         NAME='Evince'
+                #     else
+                #         NAME='unknown'
+                #     fi
+                # else
+                #     NAME=$(xprop -id $window WM_CLASS | cut -d \" -f 4)
+                # fi
+                NAME=$(cat "/var/run/user/$(id -u)/fusuma-3finger")
                 case $NAME in
                     Spotify)
                         logger 'fusuma key: AudioPrev'
@@ -77,11 +83,11 @@ swipe:
                         ;;
                     *)
                         logger 'fusuma key ctrl+PgUp'
-                        ydotool key --key-delay 0 29:1 104:1 104:0 29:0 # ctrl and PgDown
+                        ydotool key --key-delay 0 29:1 104:1 104:0 29:0 # ctrl and PgUp
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.6
+            interval: 1.8
     # 3:
     #     begin:
     #       command: xdotool keydown Alt
@@ -103,22 +109,54 @@ swipe:
           #update:
             #command: xte 'keydown Control_L' 'key F4' 'keyup Control_L'
             # command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix) xte 'keydown Control_L' 'keydown Shift_L' 'key W' 'keyup Shift_L' 'keyup Control_L';; kitty|Firefox|"Firefox Developer Edition"|"Tor Browser") xte 'keydown Control_L' 'key F4' 'keyup Control_L';; *) xte 'keydown Control_L' 'key W' 'keyup Control_L';; esac
-            command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix) ydotool key --key-delay 0 29:1 42:1 17:1 17:0 42:0 29:0 ;; kitty|firefox|"Firefox Developer Edition"|"Tor Browser") ydotool key --key-delay 0 29:1 62:1 62:0 29:0 ;; *) ydotool key --key-delay 0 29:1 17:1 17:0 29:0 ;; esac
-            threshold: 0.9
+            command: |-
+                case $(cat "/var/run/user/$(id -u)/fusuma-3finger") in
+                    Tilix)
+                        ydotool key --key-delay 0 29:1 42:1 17:1 17:0 42:0 29:0
+                        ;;
+                    kitty|firefox|"Firefox Developer Edition"|"Tor Browser")
+                        ydotool key --key-delay 0 29:1 62:1 62:0 29:0
+                        ;;
+                    Evince)
+                        ydotool key --key-delay 0 56:0 # left alt
+                        ydotool key --key-delay 0 29:1 17:1 17:0 29:0
+                        ;;
+                    *)
+                        ydotool key --key-delay 0 29:1 17:1 17:0 29:0
+                        ;;
+                esac
+            threshold: 0.7
             # interval: 2.0
         down:
           #update:
             #command: xte 'keydown Control_L' 'keydown Shift_L' 'key T' 'keyup Shift_L' 'keyup Control_L'
             # command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix|kitty) xte 'keydown Control_L' 'keydown Shift_L' 'key T' 'keyup Shift_L' 'keyup Control_L';; TeXstudio) xte 'keydown Control_L' 'key N' 'keyup Control_L';; "") xte 'keydown Control_L' 'keydown Alt_L' 'key T' 'keyup Alt_L' 'keyup Control_L';; *) xte 'keydown Control_L' 'key T' 'keyup Control_L';; esac
-            command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix|kitty) ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0 ;; TeXstudio) ydotool key --key-delay 0 29:1 49:1 49:0 29:0 ;; "") ydotool key --key-delay 0 29:1 56:1 20:1 20:0 56:0 29:0 ;; *) ydotool key --key-delay 0 29:1 20:1 20:0 29:0 ;; esac
+            command:
+                case $(cat "/var/run/user/$(id -u)/fusuma-3finger") in
+                    Tilix|kitty)
+                        ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0
+                        ;;
+                    TeXstudio)
+                        ydotool key --key-delay 0 29:1 49:1 49:0 29:0
+                        ;;
+                    "")
+                        ydotool key --key-delay 0 29:1 56:1 20:1 20:0 56:0 29:0
+                        ;;
+                    *)
+                        ydotool key --key-delay 0 29:1 20:1 20:0 29:0
+                        ;;
+                esac
             #if [[ $(xdotool getwindowfocus getwindowname) =~ ".*Firefox$" ]]; then
                 #xte 'keydown Control_L' 'key T' 'keyup Control_L';
             #else
                 #xte 'keydown Control_L' 'keydown Shift_L' 'key T' 'keyup Shift_L' 'keyup Control_L';
             #fi
-            threshold: 0.8
+            threshold: 0.6
             #interval: 3.1
     4:
+        # begin:
+        #   command: 'xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4 > "/var/run/user/$(id -u)/fusuma-4finger"'
+        #   interval: 0.0
         left:
             command: |-
                 window=$(xdotool getactivewindow)
@@ -187,7 +225,7 @@ pinch:
     3:
         in:
             # command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix) xte 'keydown Alt_L' 'key Escape' 'keyup Alt_L';; *) xte 'keydown Super_L' 'key 4' 'keyup Super_L';; esac
-            command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix) ydotool key --key-delay 0 56:1 1:1 1:0 56:0 ;; *) ydotool key --key-delay 0 125:1 5:1 5:0 125:0 ;; esac
+            command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in kitty|Tilix) ydotool key --key-delay 0 56:1 1:1 1:0 56:0 ;; *) ydotool key --key-delay 0 125:1 5:1 5:0 125:0 ;; esac
             threshold: 0.8
         out:
             # command: xte 'keydown Super_L' 'key S' 'keyup Super_L'
@@ -196,9 +234,13 @@ pinch:
     4:
         in:
             # command: xte 'keydown Alt_L' 'keydown Shift_L' 'key Tab' 'keyup Shift_L' 'keyup Alt_L'
-            command: ydotool key --key-delay 0 56:1 42:1 15:1 15:0 42:0 56:0
+            command: ydotool key --key-delay 0 56:1 42:1 1:1 1:0 42:0 56:0
             threshold: 0.75
         out:
             # command: xte 'keydown Alt_L' 'key Tab' 'keyup Alt_L'
-            command: ydotool key --key-delay 0 56:1 15:1 15:0 56:0
+            command: ydotool key --key-delay 0 56:1 1:1 1:0 56:0
             threshold: 0.7
+# hold:
+#     4:
+#       command: "echo -------------- tap 4 -------------- "
+#       threshold: 0.5

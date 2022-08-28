@@ -46,8 +46,8 @@
 
 ⊆ subseteq
 ⊂ subset
-# ≥ geq
-# ≤ leq
+≤ leq
+≥ geq
 ∇ nabla
 ∂ partial
 ∘ circ
@@ -68,8 +68,6 @@
 #≅ cong
 #≈ approx
 #≡ equiv
-≤ leq
-≥ geq
 ≲ lesssim
 ≳ gtsim
 ∖ setminus

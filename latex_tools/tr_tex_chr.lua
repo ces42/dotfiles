@@ -19,7 +19,7 @@ function tr_read(str)
     a, b = str:find('\\[a-zA-Z]+')
     if a == nil then
         new = str
-		goto final
+	goto final
     end
     new = {}
     last = 0
@@ -36,11 +36,11 @@ function tr_read(str)
     table.insert(new, str:sub(last+1, #str))
     new = table.concat(new, '')
 
-	::final::
-	if tex_to_chr['|'] ~= nil then
-		new = new:gsub('\\|', tex_to_chr['|'])
+    ::final::
+    if tex_to_chr['|'] ~= nil then
+	    new = new:gsub('\\|', tex_to_chr['|'])
     end
-	return new
+    return new
 end
 
 

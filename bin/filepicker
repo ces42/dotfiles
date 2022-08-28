@@ -1,15 +1,25 @@
 #!/bin/env bash
 #{sleep .01; wmctrl -r :ACTIVE: -b toggle,skip_taskbar}&!
+SHORTENS=('Books' 'Uni' 'BooksMath' 'papers')
+for d in ${SHORTENS[@]}; do
+	SED_CORE=${SED_CORE:+$SED_CORE'\|'}$d
+done
+SED="s#^Documents/\($SED_CORE\)/#~\1/#"
+SEDBACK="s#^~\($SED_CORE\)/#Documents/\1/#"
+
 IFS='
 '
 PATH="$PATH:$HOME/.fzf/bin"
 tput smkx
 IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.toc,*.out,*.fdb_latexmk,*.synctex.gz}')
+
+
+
 out=$(
-fd -L "${IGNORES[@]}" | fzf \
+fd -L "${IGNORES[@]}" | sed $SED | fzf \
 		--multi \
 		--reverse \
-		--preview '{ [ -d {} ] && ls -alh --color=always {} } || { [[ $(file --mime {}) =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {}) =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime {}) =~ binary ]] && echo binary file, $(du -kh {} | cut -f1)B && ls -lah {} } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }' \
+		--preview 'f=$(echo {} | sed "'$SEDBACK'"); { [ -d $f ] && ls -alh --color=always $f } || { [[ $(file --mime $f) =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f) =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime $f) =~ binary ]] && echo binary file, $(du -kh $f | cut -f1)B && ls -lah $f } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
 		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
 		--bind "alt-d:change-prompt(D> )+reload(fd -L --type d $IGNORES)" \
 		--bind "alt-f:change-prompt(F> )+reload(fd -L --type f $IGNORES)"\
@@ -21,27 +31,31 @@ fd -L "${IGNORES[@]}" | fzf \
 		--color=marker:#87ff00,spinner:#af5fff,header:#87afaf \
 		--expect=ctrl-o,alt-enter,ctrl-]
 	)
-#mode=$(echo out | head -n 1)
-#files=$(echo out | tail -n +2)
+IFS=''
 
 #echo $(echo $out | awk -F "\n" "{print $1}")
-#echo "$out"
-if [[ $(echo "$out" | head -n 1) == "ctrl-o" ]]; then
-	for f in "$(echo "$out" | tail -n +2)"; do
+out=$(echo $out | sed $SEDBACK)
+mode=$(echo $out | head -n 1)
+files=$(echo $out | tail -n +2)
+echo $mode
+echo $files
+
+if [[ $mode == "ctrl-o" ]]; then
+	for f in "$files"; do
 		if [ -d "$f" ]; then
 			detach xdg-open "$f"
 		elif [[ "$(file --mime "$f")" =~ application/pdf ]]; then
 			detach okular "$f"
 		fi
 	done
-elif [[ $(echo "$out" | head -n 1) == "alt-enter" ]]; then
-	for f in "$(echo "$out" | tail -n +2)"; do
+elif [[ $mode == "alt-enter" ]]; then
+	for f in "$files"; do
 		open=$(dmenu_path | dmenu "$@")
 		#echo "$open $f"
 		detach zsh -c "$open $f"
 	done
-elif [[ $(echo "$out" | head -n 1) == "ctrl-]" ]]; then
-	for f in "$(echo "$out" | tail -n +2)"; do
+elif [[ $mode == "ctrl-]" ]]; then
+	for f in "$files"; do
 		eval "$(xdotool getmouselocation --shell)"
 		detach dragon --and-exit "$f"
 		while true; do
@@ -54,12 +68,13 @@ elif [[ $(echo "$out" | head -n 1) == "ctrl-]" ]]; then
 		notify-send "Click to drop $f..."
 	done
 else
-	for_vim=""
-	for f in $out; do
+	#for_vim=""
+	for f in "$files"; do
 		#if [[ "$f" =~ .*\.(txt|md|log|py|tex|cpp|c|h|xml|html|sh|zsh|bib) ]]; then
 		#	for_vim="$for_vim $f"
 		#	continue
 		#fi
+		echo 'file: '$f
 		if [ -d "$f" ]; then
  			detach kitty-tab "~/$f"
 		else

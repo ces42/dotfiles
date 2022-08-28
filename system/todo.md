@@ -1,12 +1,5 @@
-# shell
-- `.aliases`
-
-# graphical stuff
-- `.xbindkeysrc`
-
 # vim
-- `~/latex_tools/*`
-- Actually I should move this to some place in either `~/bin/` or the nvim config
+- move `latex_tools` to some place in either `~/bin/` or the nvim config?
 
-# latex
-- the preamble...
+# fn-keys
+- [acpid2](https://wiki.archlinux.org/title/Acpid) might be able to map the "settings" key `fn+f12`. cf `acpi_listen`

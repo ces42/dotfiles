@@ -69,7 +69,11 @@ local function search_cnt()
       else
           disp = string.sub(s, 1, 11) .. '…'
       end
-      return string.format("%s/%d /%s", res.current, res.total, disp)
+      return string.format("/%s %s/%s",
+                           disp,
+                           res.current < 100 and res.current or '>99',
+                           res.total < 100 and res.total or '>99'
+                        )
   else 
       return ""
   end
@@ -88,7 +92,14 @@ require'lualine'.setup {
     always_divide_middle = true,
   },
   sections = {
-    lualine_a = {'mode'},
+    lualine_a = {{
+      'mode',
+      fmt = function(data)
+        local windwidth = vim.fn.winwidth(0)
+        if windwidth < 80 then return data:sub(1,1) end
+        return data
+      end
+    }},
     lualine_b = {'branch', 'diff', 'diagnostics'},
     lualine_c = {
       { custom_fname, file_status = true, path = 1 },
@@ -102,7 +113,7 @@ require'lualine'.setup {
   inactive_sections = {
     lualine_a = {},
     lualine_b = {},
-    lualine_c = {{ 'filename', file_status = true, path = 1 }},
+    lualine_c = {{ 'filename', file_status = true, path = 1}},
     lualine_x = {'location'},
     lualine_y = {},
     lualine_z = {}

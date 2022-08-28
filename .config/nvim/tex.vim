@@ -49,7 +49,7 @@ function! VimtexPreSetup()
     let g:vimtex_quickfix_autoclose_after_keystrokes = 3
     let g:tex_flavor = 'latex'
 
-    set fdm=manual
+    set fdm=marker
     "let g:vimtex_fold_enabled = 1
     "let g:vimtex_fold_types = {
     "            \ 'envs' : {'enabled': 0},

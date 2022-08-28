@@ -40,7 +40,7 @@ call plug#begin()
     Plug 'nvim-lualine/lualine.nvim'
     "Plug 'scrooloose/nerdcommenter' " provides (filetype-aware) maps for commenting stuff out
     Plug 'tpope/vim-commentary'
-    Plug 'tpope/vim-sleuth' " autodetecs indetation type of file - slow on startup
+    "Plug 'tpope/vim-sleuth' " autodetecs indetation type of file - slow on startup
     Plug 'tpope/vim-surround' " sourround things, change surrounders
     Plug 'tpope/vim-repeat' " makes plugin maps repeatable
     "Plug 'dimbleby/black.vim' " slow
@@ -475,6 +475,8 @@ cnoremap <C-p> <PageUp>
 cnoremap <C-n> <PageDown>
 cnoremap <M-p> <Up>
 cnoremap <M-n> <Down>
+" <C-.> for quick insertion of %:h (directory of the current file)
+cnoremap <C-.> %:h
 " Spacebar inserts space in normal mode too
 nnoremap <Space> i <Esc>l
 "split navigations

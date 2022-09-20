@@ -19,6 +19,7 @@ out=$(
 fd -L "${IGNORES[@]}" | sed $SED | fzf \
 		--multi \
 		--reverse \
+		--tiebreak=length \
 		--preview 'f=$(echo {} | sed "'$SEDBACK'"); { [ -d $f ] && ls -alh --color=always $f } || { [[ $(file --mime $f) =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f) =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime $f) =~ binary ]] && echo binary file, $(du -kh $f | cut -f1)B && ls -lah $f } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
 		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
 		--bind "alt-d:change-prompt(D> )+reload(fd -L --type d $IGNORES)" \
@@ -65,7 +66,6 @@ elif [[ $mode == "ctrl-]" ]]; then
 		done
 		xdotool windowmove $xid 100 100
 		xdotool mousemove --sync -w "$xid" 1 1 mousedown 1 mousemove $X $Y
-		notify-send "Click to drop $f..."
 	done
 else
 	#for_vim=""

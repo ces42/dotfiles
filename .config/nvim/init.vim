@@ -34,7 +34,8 @@ set shiftwidth=4
 "END
 
 call plug#begin()
-    Plug 'lervag/vimtex' " TeX stuff
+    "Plug 'lewis6991/impatient.nvim'
+    Plug 'lervag/vimtex', {'for': ['pandoc', 'tex']} " TeX stuff
     "Plug 'Valloric/YouCompleteMe' " Python, C++, ... autocompletion
     "Plug 'vim-airline/vim-airline' " fancy statusbar
     Plug 'nvim-lualine/lualine.nvim'
@@ -64,7 +65,7 @@ call plug#begin()
     Plug 'windwp/nvim-autopairs'
     "Plug 'wellle/targets.vim'
     Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    "Plug 'neovim/nvim-lspconfig'
+    Plug 'neovim/nvim-lspconfig'
     "Plug 'neoclide/coc.nvim', {'branch': 'release'}
     "Plug 'monkoose/matchparen.nvim'
     "Plug 'ggandor/lightspeed.nvim'
@@ -78,62 +79,61 @@ call plug#begin()
 call plug#end()
 " }}}
 
-    "let g:loaded_matchparen = 1
-    "Youcompleteme fix
-    "let g:ycm_global_ycm_extra_conf = '~/.config/nvim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
-    "let g:ycm_min_num_of_chars_for_completion=4
+"let g:loaded_matchparen = 1
+"Youcompleteme fix
+"let g:ycm_global_ycm_extra_conf = '~/.config/nvim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
+"let g:ycm_min_num_of_chars_for_completion=4
 
-    " airline {{{
-    if !exists('g:airline_symbols')
-       let g:airline_symbols = {}
-    endif
-    let g:airline_symbols.maxlinenr = '' " used to be '㏑'
-    let g:airline_symbols.linenr = ' ' " used to be '☰'
-    let g:airline_symbols.colnr = ':'
-    let g:airline_symbols.dirty='⚡'
-    let g:airline_symbols.branch = ''
-    let g:airline#extensions#fzf#enabled = 1
-    "let g:airline_powerline_fonts = 1
-    let g:airline#extensions#whitespace#mixed_indent_algo = 2
-    let g:airline#extensions#whitespace#trailing_format = 'tr:%s'
-    let g:airline#extensions#whitespace#mixed_indent_file_format = 'mi:%s'
-    let g:airline#extensions#wordcount#formatter#default#fmt = '%sW'
-    " }}}
+" airline {{{
+"if !exists('g:airline_symbols')
+"   let g:airline_symbols = {}
+"endif
+"let g:airline_symbols.maxlinenr = '' " used to be '㏑'
+"let g:airline_symbols.linenr = ' ' " used to be '☰'
+"let g:airline_symbols.colnr = ':'
+"let g:airline_symbols.dirty='⚡'
+"let g:airline_symbols.branch = ''
+"let g:airline#extensions#fzf#enabled = 1
+""let g:airline_powerline_fonts = 1
+"let g:airline#extensions#whitespace#mixed_indent_algo = 2
+"let g:airline#extensions#whitespace#trailing_format = 'tr:%s'
+"let g:airline#extensions#whitespace#mixed_indent_file_format = 'mi:%s'
+"let g:airline#extensions#wordcount#formatter#default#fmt = '%sW'
+" }}}
 
-    let g:pymode_python = 'python3'
+let g:pymode_python = 'python3'
 
-    " bullets.vim
-    let g:bullets_enabled_file_types = ['markdown', 'gitcommit']
+" bullets.vim
+let g:bullets_enabled_file_types = ['markdown', 'gitcommit']
 
-    "python-syntax {{{
-    let g:python_highlight_string_format = 1
-    let g:python_highlight_builtins = 1
-    let g:python_highlight_exceptions = 1
-    let g:python_highlight_space_errors = 1
-    let g:python_highlight_operators = 1
-    let g:python_highlight_class_vars = 1
-    " }}}
+"python-syntax {{{
+let g:python_highlight_string_format = 1
+let g:python_highlight_builtins = 1
+let g:python_highlight_exceptions = 1
+let g:python_highlight_space_errors = 1
+let g:python_highlight_operators = 1
+let g:python_highlight_class_vars = 1
+" }}}
 
 
-    " vim-pandoc
-    let g:pandoc#folding#level=4
-    "let g:pandoc#command#autoexec_on_writes = 1
-    let g:pandoc#command#autoexec_command = 'Pandoc pdf --pdf-engine="pdflatex" -f markdown+smart -F arrows --abbreviations="/home/ca/.pandoc/abbrevs.txt"'
-    let g:pandoc#command#custom_open = 'evince'
-    "let g:pandoc#syntax#conceal#cchar_overrides = {"strike": "-"}
+" vim-pandoc
+let g:pandoc#folding#level=4
+"let g:pandoc#command#autoexec_on_writes = 1
+let g:pandoc#command#autoexec_command = 'Pandoc pdf --pdf-engine="pdflatex" -f markdown+smart -F arrows --abbreviations="/home/ca/.pandoc/abbrevs.txt"'
+let g:pandoc#command#custom_open = 'evince'
+"let g:pandoc#syntax#conceal#cchar_overrides = {"strike": "-"}
 
-    " auto-pairs
-    let g:AutoPairsMapCh = 0
-    let g:AutoPairsShortcutBackInsert='<M-v>'
+" auto-pairs
+let g:AutoPairsMapCh = 0
+let g:AutoPairsShortcutBackInsert='<M-v>'
 
-    " incsearch.vim
-    "map /  <Plug>(incsearch-forward)
-    "map ?  <Plug>(incsearch-backward)
-    "map g/ <Plug>(incsearch-stay)
+" incsearch.vim
+"map /  <Plug>(incsearch-forward)
+"map ?  <Plug>(incsearch-backward)
+"map g/ <Plug>(incsearch-stay)
 
-    " easymotion
-    map <Leader> <Plug>(easymotion-prefix)
-
+" easymotion
+map <Leader> <Plug>(easymotion-prefix)
 
 
 
@@ -150,7 +150,7 @@ lua require('npairs')
 " ~/.config/nvim/lua/lualine_config.lua
 lua require('lualine_config')
 "lua require('matchparen').setup()
-"lua require('tabout').setup{
+"lua require('tabout').setuPlug
 "            \    tabkey = '<C-j>',
 "            \    backwards_tabkey = '<C-;>',
 "            \    act_as_tab = false,
@@ -166,6 +166,8 @@ lua require('lualine_config')
 "            \        {open = '{', close = '}'}
 "            \    }
 "            \}
+
+lua require('lspconfig').pyright.setup{}
 
 hi IndentBlanklineChar guifg=#2a2a2a
 "lua require("indent_blankline").setup {
@@ -255,7 +257,7 @@ if exists('g:started_by_firenvim')
         
         " Stackexchange
         au BufEnter firenvimSE_*.tex let g:status = 'translate'
-        au BufWritePre firenvimSE_*.tex lua expand_font_macros()
+        "au BufWritePre firenvimSE_*.tex lua expand_font_macros()
         "au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
         "au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
         au TextChangedI firenvimSE_*.tex call Delay_My_Write(2000)
@@ -531,6 +533,10 @@ nnoremap gO O.<BS><ESC>
 " save when file is readonly using sudo
 command! WW SudaWrite %|set nomodified
 
+"common typos
+command! Wq wq
+command! WQ wq
+
 " fugitive shortcuts
 command! Gc Git commit % -m .
 command! GC Git commit % -m .
@@ -541,6 +547,9 @@ command! GP Git push
 
 command! Rc tabe ~/.config/nvim/init.vim
 command! RC tabe ~/.config/nvim/init.vim
+
+" QQ to leave vim
+nnoremap QQ :qa<enter>
 
 command! -nargs=? RichPaste call RichPaste('<args>')
 command! -nargs=? RP call RichPaste('<args>')
@@ -598,7 +607,8 @@ au FileType * let b:commentary_format=&commentstring
 " }}}
 
 " customize terminal title
-autocmd BufEnter * let &titlestring="nvim:" . expand("%:p")
+autocmd BufEnter * let &titlestring="VI:" . substitute(expand("%:p"), $HOME, '~', 0)
+"autocmd BufEnter * let &titlestring="\ue62b:" . substitute(expand("%:p"), $HOME, '~', 0)
 set title
 
 " customize cursor, highlighting etc {{{

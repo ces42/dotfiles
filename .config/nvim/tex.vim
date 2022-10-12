@@ -175,7 +175,9 @@ endif
 
 function! Tex_tr_FileRead()
     exe "sil doau FileReadPre " . fnameescape(expand("<amatch>"))
-    exe "noautocmd sil r! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+    "exe "noautocmd sil r! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+    exe "noautocmd r" . fnameescape(expand("<amatch>"))
+    exe
     exe "sil doau FileReadPost " .fnameescape(expand("<amatch>"))
     let b:translate_tex_unicode = 1
 endfunction

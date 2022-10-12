@@ -156,3 +156,8 @@ fi
 # For dotfiles management (see https://www.atlassian.com/git/tutorials/dotfiles)
 # (except there it's called 'config' instead of 'dotfiles')
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+
+if test -n "$KITTY_INSTALLATION_DIR"; then
+    export KITTY_SHELL_INTEGRATION="enabled"
+    source "$KITTY_INSTALLATION_DIR/shell-integration/bash/kitty.bash"
+fi

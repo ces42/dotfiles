@@ -1,23 +1,19 @@
 # look at /usr/include/linux/input-event-codes.h to find keycodes for ydotool
 # ctrl = 29, shift = 42, alt plugin: 
-inputs:
-    libinput_command_input:
-        enable-tap: true
-        verbose: true= 56, super = 125, escape = 1
 swipe:
     3:
         begin:
           command: |-
               wname=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4 | tee "/var/run/user/$(id -u)/fusuma-3finger")
               logger 'fusuma: window='$wname
-              if [ $wname = 'Evince' ]; then
+              if [ "$wname" = 'Evince' ]; then
                   logger 'fusuma: pressing alt'
                   ydotool key --key-delay 0 56:1 # left alt
               fi
           interval: 0.1
         end:
           command: |-
-              [ $(cat "/var/run/user/$(id -u)/fusuma-3finger") = 'Evince' ] && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
+              [ "$(cat "/var/run/user/$(id -u)/fusuma-3finger")" = 'Evince' ] && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
         left:
           update:
             #sendkey: "LEFTCTRL+NEXT"
@@ -52,7 +48,7 @@ swipe:
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.8
+            interval: 1.9
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
@@ -87,7 +83,7 @@ swipe:
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.8
+            interval: 1.9
     # 3:
     #     begin:
     #       command: xdotool keydown Alt
@@ -118,7 +114,9 @@ swipe:
                         ydotool key --key-delay 0 29:1 62:1 62:0 29:0
                         ;;
                     Evince)
-                        ydotool key --key-delay 0 56:0 # left alt
+                        if [ $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4) = 'Evince' ]; then
+                            ydotool key --key-delay 0 56:0 # left alt
+                        fi
                         ydotool key --key-delay 0 29:1 17:1 17:0 29:0
                         ;;
                     *)
@@ -131,13 +129,29 @@ swipe:
           #update:
             #command: xte 'keydown Control_L' 'keydown Shift_L' 'key T' 'keyup Shift_L' 'keyup Control_L'
             # command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in Tilix|kitty) xte 'keydown Control_L' 'keydown Shift_L' 'key T' 'keyup Shift_L' 'keyup Control_L';; TeXstudio) xte 'keydown Control_L' 'key N' 'keyup Control_L';; "") xte 'keydown Control_L' 'keydown Alt_L' 'key T' 'keyup Alt_L' 'keyup Control_L';; *) xte 'keydown Control_L' 'key T' 'keyup Control_L';; esac
-            command:
+            command: |-
                 case $(cat "/var/run/user/$(id -u)/fusuma-3finger") in
                     Tilix|kitty)
                         ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0
                         ;;
                     TeXstudio)
                         ydotool key --key-delay 0 29:1 49:1 49:0 29:0
+                        ;;
+                    firefox|"Firefox Developer Edition"|"Tor Browser")
+                        # return 0 = true, so meaning is inverted !!
+                        # logger "fusuma: $(date +%s.%N) - $(stat -c %.9Y /var/run/user/1000/fusuma-3finger) < 0.5"
+                        # if [ $(echo "$(date +%s.%N) - $(stat -c %.9Y /var/run/user/1000/fusuma-3finger) < 0.5" | bc) -eq 1 ]; then 
+                        #     ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0 # ctrl + shift + t
+                        #     logger 'fusuma: ctrl+shift+t'
+                        # else
+                        if [ $(echo "$(date +%s.%N) - $(stat -c %.9Y /var/run/user/$(id -u)/fusuma-FF-newtab) < 0.5" | bc) -eq 1 ]; then 
+                            ydotool key --key-delay 0 29:1 62:1 62:0 29:0 # ctrl + w
+                            ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0 # ctrl + shift + t
+                            rm "/var/run/user/$(id -u)/fusuma-FF-newtab"
+                        else
+                            touch "/var/run/user/$(id -u)/fusuma-FF-newtab"
+                            ydotool key --key-delay 0 29:1 20:1 20:0 29:0
+                        fi
                         ;;
                     "")
                         ydotool key --key-delay 0 29:1 56:1 20:1 20:0 56:0 29:0
@@ -162,7 +176,7 @@ swipe:
                 window=$(xdotool getactivewindow)
                 case $(xprop -id $window WM_CLASS | cut -d '"' -f 4) in
                     Tilix|kitty)
-                        if echo $(xprop -id $window WM_NAME | cut -d '"' -f 2) | grep "^nvim:"; then
+                        if echo $(xprop -id $window WM_NAME | cut -d '"' -f 2) | grep "^VI:"; then
                             # xte 'keydown Control_L' 'keydown Alt_L' 'key Next' 'keyup Alt_L' 'keyup Control_L' 
                             ydotool key --key-delay 0 29:1 56:1 109:1 109:0 56:0 29:0 
                         else
@@ -185,7 +199,7 @@ swipe:
                 window=$(xdotool getactivewindow)
                 case $(xprop -id $window WM_CLASS | cut -d \" -f 4) in
                     Tilix|kitty)
-                        if echo $(xprop -id $window WM_NAME | cut -d '"' -f 2) | grep "^nvim:"; then
+                        if echo $(xprop -id $window WM_NAME | cut -d '"' -f 2) | grep "^VI:"; then
                             # xte 'keydown Control_L' 'keydown Alt_L' 'key Prior' 'keyup Alt_L' 'keyup Control_L' 
                             ydotool key --key-delay 0 29:1 56:1 104:1 104:0 56:0 29:0 
                         else
@@ -239,8 +253,27 @@ pinch:
         out:
             # command: xte 'keydown Alt_L' 'key Tab' 'keyup Alt_L'
             command: ydotool key --key-delay 0 56:1 1:1 1:0 56:0
+            # command: ydotool key --key-delay 1 125:1 15:1 15:0 125:0
             threshold: 0.7
+
 # hold:
-#     4:
-#       command: "echo -------------- tap 4 -------------- "
-#       threshold: 0.5
+#     3:
+#       begin:
+#         command: |-
+#             ydotool key --key-delay 0 56:1 15:1 15:0
+#             sleep 0.01
+#             ydotool key --key-delay 0 42:1 15:1 15:0 42:0
+#         threshold: .5
+#       end:
+#         command:
+#             ydotool key --key-delay 0 56:0
+
+inputs:
+    libinput_command_input:
+        enable-tap: true
+        verbose: true= 56, super = 125, escape = 1
+plugin:
+  filters:
+    libinput_device_filter:
+      keep_device_names:
+        - "SYNA32A2:00 06CB:CE17 Touchpad"

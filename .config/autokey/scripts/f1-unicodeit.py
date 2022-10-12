@@ -45,14 +45,15 @@ else:
         .replace(r'\frac14', '¼') \
         .replace(r'\frac23', '⅔') \
         .replace(r'\frac34', '¾') \
-        .replace(r'\frac15', '⅕')
+        .replace(r'\frac15', '⅕') 
         
 
     for c in 'CQRZHP':
         textpp = textpp.replace('\\'+c*2, '\\mathbb{' + c + '}')
 
     new = unicodeit.replace(textpp)
-    new = new.replace('\shrug', r'¯\_(ツ)_/¯')
+    new = new.replace('\shrug', r'¯\_(ツ)_/¯') \
+             .replace(r'^/', 'ᐟ')   
     print(text)
     print(new)
     clipboard.fill_clipboard(new)

@@ -39,7 +39,8 @@ else:
         .replace(r'\>', '⟩') \
         .replace(r'\box', '☐') \
         .replace(r'\surj', '↠') \
-        .replace(r'\inj', r'\hookrightarrow')
+        .replace(r'\inj', r'\hookrightarrow') \
+        .replace(r'\acts', r'\curvearrowright')
     textpp = textpp.replace(r'\frac12', '½') \
         .replace(r'\frac13', '⅓') \
         .replace(r'\frac14', '¼') \

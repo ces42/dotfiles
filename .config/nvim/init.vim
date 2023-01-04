@@ -4,80 +4,86 @@ let g:python3_host_prog = expand('/usr/bin/python3')
 set tabstop=4
 set shiftwidth=4
 
-"" configure vim-plug plugin manager {{{
-"packadd packer.nvim
-"lua << END
-"require('packer').startup(function()
-"    use 'wbthomason/packer.nvim'
-"    use 'lervag/vimtex' -- TeX stuff
-"    use 'nvim-lualine/lualine.nvim'
-"    use 'tpope/vim-commentary'
-"    use 'tpope/vim-sleuth' -- autodetecs indetation type of file - slow on startup
-"    use 'tpope/vim-surround' -- sourround things, change surrounders
-"    use 'tpope/vim-repeat' -- makes plugin maps repeatable
-"    use 'junegunn/fzf.vim'
-"    use 'tpope/vim-fugitive' -- Git integration
-"    use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end }
-"    use 'dkarter/bullets.vim' -- automatically continue bullet lists
-"    use {'vim-pandoc/vim-pandoc-syntax', ft = 'pandoc'}
-"    use {'vim-pandoc/vim-pandoc', ft = {'pandoc', 'pandoc-tex'}} -- for pandoc
-"    use 'sirver/UltiSnips' -- insert snippets
-"    use {'honza/vim-snippets', ft = {'tex', 'snippets'}} -- lots of predefined snippets
-"    use 'lambdalisue/suda.vim' -- sudo-save with :W
-"    use {'vim-python/python-syntax', ft = 'python'}
-"    use 'tpope/vim-scriptease'
-"    use {'glacambre/firenvim', run = function() vim.fn['firenvim#install'](0) end}
-"    use 'windwp/nvim-autopairs'
-"    use {'nvim-treesitter/nvim-treesitter', run = function() vim.cmd('TSUpdate') end}
-"    use 'easymotion/vim-easymotion'
-"end)
-"END
+" configure vim-plug plugin manager {{{
 
-call plug#begin()
-    "Plug 'lewis6991/impatient.nvim'
-    Plug 'lervag/vimtex', {'for': ['pandoc', 'tex']} " TeX stuff
-    "Plug 'Valloric/YouCompleteMe' " Python, C++, ... autocompletion
-    "Plug 'vim-airline/vim-airline' " fancy statusbar
-    Plug 'nvim-lualine/lualine.nvim'
-    "Plug 'scrooloose/nerdcommenter' " provides (filetype-aware) maps for commenting stuff out
-    Plug 'tpope/vim-commentary'
-    "Plug 'tpope/vim-sleuth' " autodetecs indetation type of file - slow on startup
-    Plug 'tpope/vim-surround' " sourround things, change surrounders
-    Plug 'tpope/vim-repeat' " makes plugin maps repeatable
-    "Plug 'dimbleby/black.vim' " slow
-    Plug 'junegunn/fzf.vim'
-    Plug 'tpope/vim-fugitive' " Git integration
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-    Plug 'dkarter/bullets.vim' " automatically continue bullet lists
-    Plug 'vim-pandoc/vim-pandoc-syntax', {'for': 'pandoc'}
-    Plug 'vim-pandoc/vim-pandoc', {'for': ['pandoc', 'pandoc-tex']} " for pandoc
-    Plug 'sirver/UltiSnips' " insert snippets
-    "Plug 'honza/vim-snippets', {'for': ['tex', 'snippets']} " lots of predefined snippets
-    Plug 'lambdalisue/suda.vim' " sudo-save with :W
-    "Plug 'jiangmiao/auto-pairs' " autocomplete ( etc.
-    Plug 'vim-python/python-syntax', {'for': 'python'}
-    Plug 'tpope/vim-scriptease'
-    "Plug  'tweekmonster/startuptime.vim'
-    Plug 'ces42/firenvim', { 'do': { _ -> firenvim#install(0) } }
-    "Plug 'klen/python-mode'
-    "Plug 'mhinz/vim-startify' " fancy start screen
-    "Plug 'ap/vim-css-color'
-    Plug 'windwp/nvim-autopairs'
-    "Plug 'wellle/targets.vim'
-    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-    Plug 'neovim/nvim-lspconfig'
-    "Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    "Plug 'monkoose/matchparen.nvim'
-    "Plug 'ggandor/lightspeed.nvim'
-    Plug 'easymotion/vim-easymotion'
-    "Plug 'haya14busa/incsearch.vim' "just jump between matches during incsearch w/ <C-g>
-    "Plug 'adelarsq/vim-matchit'
-    "Plug 'abecodes/tabout.nvim'
-    "Plug 'lukas-reineke/indent-blankline.nvim', {'for': ['vim', 'python', 'snippets']}
-    "Plug 'Konfekt/FastFold'
-    "Plug 'Raimondi/delimitMate'
-call plug#end()
-" }}}
+packadd packer.nvim
+"packloadall
+lua << END
+require('packer').startup(function()
+    use 'wbthomason/packer.nvim'
+    use {'lewis6991/impatient.nvim', disable = true}
+    use {'lervag/vimtex', event = {'BufReadPre *.tex', 'BufNewFile *.tex'}}
+    use 'nvim-lualine/lualine.nvim'
+    use 'tpope/vim-commentary'
+    use 'tpope/vim-surround' -- sourround things, change surrounders
+    use 'tpope/vim-repeat' -- makes plugin maps repeatable
+    use 'junegunn/fzf.vim'
+    use 'tpope/vim-fugitive' -- Git integration
+    use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end }
+    use {'dkarter/bullets.vim', ft = {'txt', 'pandoc'}} -- automatically continue bullet lists
+    use {'vim-pandoc/vim-pandoc-syntax', ft = 'pandoc'}
+    use {'vim-pandoc/vim-pandoc', ft = 'pandoc'} -- for pandoc
+    use {'sirver/UltiSnips', ft = {'tex', 'python', 'pandoc'}, config = 'vim.api.nvim_create_autocmd({"BufLeave"}, {pattern = {"*"}, callback = "UltiSnips#LeavingBuffer"})'} -- insert snippets
+    use {'lambdalisue/suda.vim', cmd = {'WW', 'SudaWrite'}} -- sudo-save with :WW
+    use {'vim-python/python-syntax', ft = 'python'}
+    use {'tpope/vim-scriptease', disable = true}
+    use {'ces42/firenvim', run = function() vim.fn['firenvim#install'](0) end}
+    use 'windwp/nvim-autopairs'
+    use {'nvim-treesitter/nvim-treesitter', run = function() vim.cmd('TSUpdate') end}
+    use 'neovim/nvim-lspconfig'
+    use {'easymotion/vim-easymotion', event = 'VimEnter'}
+    use 'nvim-treesitter/nvim-treesitter-textobjects'
+    -- use {'folke/noice.nvim', event = 'VimEnter', config = function() require("noice").setup() end, require = {"MunifTanjim/nui.nvim"}}
+    -- use "MunifTanjim/nui.nvim"
+end)
+END
+
+"call plug#begin()
+"    "Plug 'lewis6991/impatient.nvim'
+"    Plug 'lervag/vimtex', {'for': ['pandoc', 'tex']} " TeX stuff
+"    "Plug 'Valloric/YouCompleteMe' " Python, C++, ... autocompletion
+"    "Plug 'vim-airline/vim-airline' " fancy statusbar
+"    Plug 'nvim-lualine/lualine.nvim'
+"    "Plug 'scrooloose/nerdcommenter' " provides (filetype-aware) maps for commenting stuff out
+"    Plug 'tpope/vim-commentary'
+"    "Plug 'tpope/vim-sleuth' " autodetecs indetation type of file - slow on startup
+"    Plug 'tpope/vim-surround' " sourround things, change surrounders
+"    Plug 'tpope/vim-repeat' " makes plugin maps repeatable
+"    "Plug 'dimbleby/black.vim' " slow
+"    Plug 'junegunn/fzf.vim'
+"    Plug 'tpope/vim-fugitive' " Git integration
+"    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+"    Plug 'dkarter/bullets.vim' " automatically continue bullet lists
+"    Plug 'vim-pandoc/vim-pandoc-syntax', {'for': 'pandoc'}
+"    Plug 'vim-pandoc/vim-pandoc', {'for': ['pandoc', 'pandoc-tex']} " for pandoc
+"    Plug 'sirver/UltiSnips' " insert snippets
+"    "Plug 'honza/vim-snippets', {'for': ['tex', 'snippets']} " lots of predefined snippets
+"    Plug 'lambdalisue/suda.vim' " sudo-save with :W
+"    "Plug 'jiangmiao/auto-pairs' " autocomplete ( etc.
+"    Plug 'vim-python/python-syntax', {'for': 'python'}
+"    Plug 'tpope/vim-scriptease'
+"    "Plug  'tweekmonster/startuptime.vim'
+"    Plug 'ces42/firenvim', { 'do': { _ -> firenvim#install(0) } }
+"    "Plug 'klen/python-mode'
+"    "Plug 'mhinz/vim-startify' " fancy start screen
+"    "Plug 'ap/vim-css-color'
+"    Plug 'windwp/nvim-autopairs'
+"    "Plug 'wellle/targets.vim'
+"    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+"    Plug 'neovim/nvim-lspconfig'
+"    "Plug 'neoclide/coc.nvim', {'branch': 'release'}
+"    "Plug 'monkoose/matchparen.nvim'
+"    "Plug 'ggandor/lightspeed.nvim'
+"    Plug 'easymotion/vim-easymotion'
+"    "Plug 'haya14busa/incsearch.vim' "just jump between matches during incsearch w/ <C-g>
+"    "Plug 'adelarsq/vim-matchit'
+"    "Plug 'abecodes/tabout.nvim'
+"    "Plug 'lukas-reineke/indent-blankline.nvim', {'for': ['vim', 'python', 'snippets']}
+"    "Plug 'Konfekt/FastFold'
+"    "Plug 'Raimondi/delimitMate'
+"    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
+"call plug#end()
+"" }}}
 
 "let g:loaded_matchparen = 1
 "Youcompleteme fix
@@ -103,18 +109,24 @@ call plug#end()
 
 let g:pymode_python = 'python3'
 
-" bullets.vim
-let g:bullets_enabled_file_types = ['markdown', 'gitcommit']
+"" bullets.vim
+"let g:bullets_enabled_file_types = ['markdown', 'gitcommit']
 
-"python-syntax {{{
-let g:python_highlight_string_format = 1
-let g:python_highlight_builtins = 1
-let g:python_highlight_exceptions = 1
-let g:python_highlight_space_errors = 1
-let g:python_highlight_operators = 1
-let g:python_highlight_class_vars = 1
+""python-syntax {{{
+"let g:python_highlight_string_format = 1
+"let g:python_highlight_builtins = 1
+"let g:python_highlight_exceptions = 1
+"let g:python_highlight_space_errors = 1
+"let g:python_highlight_operators = 1
+"let g:python_highlight_class_vars = 1
 " }}}
 
+let g:bullets_enabled_file_types = [
+    \ 'markdown',
+    \ 'text',
+    \ 'gitcommit',
+    \ 'scratch'
+    \]
 
 " vim-pandoc
 let g:pandoc#folding#level=4
@@ -133,9 +145,7 @@ let g:AutoPairsShortcutBackInsert='<M-v>'
 "map g/ <Plug>(incsearch-stay)
 
 " easymotion
-map <Leader> <Plug>(easymotion-prefix)
-
-
+map <Space> <Plug>(easymotion-prefix)
 
 " filetype plugin indent on " already done by plug#end()
 " syntax on " already done by plug#end()
@@ -145,12 +155,13 @@ color PaperColor
 
 "~/.config/nvim/lua/npairs.lua
 lua require('npairs')
-"lua require('treesitter')
+"~/.config/nvim/lua/ts_config.lua
+lua require('ts_config')
 "lua require('texlab')
 " ~/.config/nvim/lua/lualine_config.lua
 lua require('lualine_config')
 "lua require('matchparen').setup()
-"lua require('tabout').setuPlug
+"lua require('tabout').setup{
 "            \    tabkey = '<C-j>',
 "            \    backwards_tabkey = '<C-;>',
 "            \    act_as_tab = false,
@@ -168,6 +179,8 @@ lua require('lualine_config')
 "            \}
 
 lua require('lspconfig').pyright.setup{}
+lua require('lspconfig').texlab.setup{cmd = {'/home/ca/.cargo/bin/texlab'}}
+set signcolumn=no
 
 hi IndentBlanklineChar guifg=#2a2a2a
 "lua require("indent_blankline").setup {
@@ -175,14 +188,14 @@ hi IndentBlanklineChar guifg=#2a2a2a
 "            \}
 
 " UltiSnips {{{
-" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+" Trigger configuration. Do not use 'tab' if you use https://github.com/Valloric/YouCompleteMe.
 let g:UltiSnipsExpandTrigger="<tab>"
 let g:UltiSnipsJumpForwardTrigger="<tab>"
 let g:UltiSnipsJumpBackwardTrigger="<c-j>"
 
 let g:UltiSnipsEditSplit="tabdo"
 
-autocmd BufLeave * call UltiSnips#LeavingBuffer() " fixes crash when doing gt inside snippet
+"autocmd BufLeave * call UltiSnips#LeavingBuffer() " fixes crash when doing gt inside snippet
 
 "inoremap <silent><expr> <TAB>
       "\ pumvisible() ? coc#_select_confirm() :
@@ -211,84 +224,7 @@ so ~/.config/nvim/tex.vim
 
 " FireNVim {{{
 if exists('g:started_by_firenvim')
-    let g:timer_started = v:false
-    function! My_Write(timer) abort
-        let g:timer_started = v:false
-        write
-    endfunction
-
-    function! Delay_My_Write(delay) abort
-        if g:timer_started
-            return
-        end
-        let g:timer_started = v:true
-        call timer_start(a:delay, 'My_Write')
-    endfunction
-
-    function! Firenvim_get_text()
-        if exists('g:status') && g:status == 'translate'
-            return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
-        end
-        " else
-        return nvim_buf_get_lines(0, 0, -1, 0)
-    endfunction
-
-    augroup FireNVim
-        
-        au!
-        py3 from translate_tex_chr import tr_restore_buffer, tr_write
-
-        " TeXnique
-        au BufEnter firenvim_texnique_*.tex call AlwaysMath()
-        au BufEnter firenvim_texnique_*.tex nnoremap <leader>c ggcG
-        
-        au BufEnter firenvim_texnique_*.tex let g:status = 'translate'
-        "au BufEnter firenvim_texnique_*.tex function! Firenvim_get_text() abort
-        "                                  "\     return py3eval('list(map(tr_write, vim.api.buf_get_lines(0, 0, -1, 0)))')
-        "                                  \     return ["AAA"]
-        "                                  \ endfunction
-        "au BufWritePre firenvim_texnique_*.tex py3 tr_change_buffer('unix')
-        "au BufWritePost firenvim_texnique_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvim_texnique_*.tex call Delay_My_Write(100)
-        au TextChanged firenvim_texnique_*.tex call Delay_My_Write(100)
-        "au BufWrite firenvim_texnique_*.tex %s/\$//ge
-        "au BufWrite firenvim_texnique_*.tex lua expand_font_macros()
-        "au BufEnter firenvim_texnique_*.tex normal i$
-        
-        " Stackexchange
-        au BufEnter firenvimSE_*.tex let g:status = 'translate'
-        "au BufWritePre firenvimSE_*.tex lua expand_font_macros()
-        "au BufWritePre firenvimSE_*.tex py3 tr_change_buffer('unix')
-        "au BufWritePost firenvimSE_*.tex py3 tr_restore_buffer()
-        au TextChangedI firenvimSE_*.tex call Delay_My_Write(2000)
-        au TextChanged firenvimSE_*.tex call Delay_My_Write(2000)
-
-        au BufEnter * set nonumber
-        "au BufWrite SE_*.tex lua expand_font_macros()
-        au BufReadPre /tmp/*.tex let b:translate_tex_unicode = 0
-    augroup END
-
-    let g:firenvim_config = {
-        \ 'localSettings': {
-            \ '.*': {
-                \ 'cmdline': 'neovim',
-                \ 'content': 'text',
-                \ 'priority': 0,
-                \ 'selector': 'textarea:not([readonly]), div[role="textbox"]',
-                \ 'takeover': 'never',
-            \ },
-            \ 'mathoverflow.net': {
-                \ 'filename': '/tmp/firenvimSE_MO_{pathname%20}_{timestamp%32}.tex',
-            \ },
-            \ 'math.stackexchange.com': {
-                \ 'filename': '/tmp/firenvimSE_MSE_{pathname%20}_{timestamp%32}.tex',
-            \ },
-            \ 'texnique.xyz': {
-                \ 'takeover': 'always',
-                \ 'filename': '/tmp/firenvim_texnique_{pathname%20}_{timestamp%32}.tex',
-            \ },
-        \ }
-    \ }
+    source ~/.config/nvim/firenvim.vim
 endif
 " }}}
 
@@ -326,6 +262,7 @@ set ttimeout ttimeoutlen=3
 set backspace=indent,eol,start
 
 set mouse=a "mouse mode
+set mousemodel=extend " use right-click to do visual select
 set clipboard=unnamed " use system clipboard
 
 set undofile " save undo history
@@ -336,7 +273,7 @@ set showcmd " show commands typed in normal mode
 set lazyredraw " don't redraw during macro execution
 
 set splitright " split window appear on right
-set hi=1000 " size of command history
+set hi=5000 " size of command history
 
 set whichwrap=<,>,[,] "arrow keys navigate to next line at end of line
 
@@ -353,7 +290,9 @@ set inccommand=split "live preview of substitutions
 " C-A, C-X operates on digits, letters, hex and binary numbers
 set nrformats=alpha,hex,bin
 
-set number " show line numbers
+" linenumbers
+set number
+set relativenumber
 
 "" line wrapping
 " breakindent can make insert mode slow
@@ -472,7 +411,7 @@ cnoremap <C-D> <del>
 " C-s to save
 inoremap <C-s> <C-o>:update<CR>
 nnoremap <C-s> :update<CR>
-" Up/Down/PageUp/PageDown etc. in command mode like in bash
+" Up/Down/PageUp/PageDown etc. in command mode like in zsh
 cnoremap <C-p> <PageUp>
 cnoremap <C-n> <PageDown>
 cnoremap <M-p> <Up>
@@ -480,7 +419,8 @@ cnoremap <M-n> <Down>
 " <C-.> for quick insertion of %:h (directory of the current file)
 cnoremap <C-.> %:h
 " Spacebar inserts space in normal mode too
-nnoremap <Space> i <Esc>l
+"nnoremap <Space> i <Esc>l
+nmap <space><space> i<space><esc>l<space>
 "split navigations
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
@@ -520,6 +460,10 @@ nnoremap gV g^vg$
 " go and gO to insert *indented* line above/below w/o leaving normal mode
 nnoremap go o.<BS><ESC>
 nnoremap gO O.<BS><ESC>
+
+" gs as alias for ys (vim-surround)
+nmap gs ys
+nmap gss yss
 
 "function! Extract(type) " currently not used
     ""let s = line("'[")
@@ -591,7 +535,6 @@ au Filetype C set
 
 au Filetype python set
             \ softtabstop=4
-            \ textwidth=99
             \ expandtab
             \ fileformat=unix
 
@@ -654,23 +597,6 @@ augroup END
 " remember marks
 set viminfo='100,f1 " https://www.linux.com/news/vim-tips-moving-around-using-marks-and-jumps/
 " }}}
-
-" briefly highlight yanked text {{{
-" https://vimrcfu.com/snippet/254
-"function! s:hl_yank() abort
-    "let [sl, el, sc, ec] = [line("'["), line("']"), col("'["), col("']")]
-    "if sl == el
-        "let pos_list = [[sl, sc, ec - sc + 1]]
-    "else
-        "let pos_list = [[sl, sc, col([sl, "$"]) - sc]] + range(sl + 1, el - 1) + [[el, 1, ec]]
-    "endif
-
-    "for chunk in range(0, len(pos_list), 8)
-        "call matchaddpos('IncSearch', pos_list[chunk:chunk + 7])
-    "endfor
-    "redraw!
-    "call timer_start(300, {t_id -> clearmatches()})
-"endfunction
 
 augroup HlYank
     autocmd!

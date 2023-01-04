@@ -1,6 +1,6 @@
 let g:UNICODE_ENABLED=1
 
-function! TexSetup()
+function! TexSetupBuffer()
     " https://castel.dev/post/lecture-notes-1
     setlocal spell
     set spelllang=en_us
@@ -20,6 +20,18 @@ function! TexSetup()
     imap <buffer> <C-9> <C-\><C-O>tsd
     "nnoremap <buffer> ci= F=lct=  <left>
     "nnoremap <buffer> ci+ F+lct+  <left>
+
+    " ys<textobj>c to sorround with latex command
+    let b:surround_{char2nr("c")} = "\\\1command: \1{\r}"
+    let b:surround_{char2nr("s")} = "\\{\r\\}"
+    let b:surround_{char2nr("S")} = "\\left\\{\r\\right\\}"
+    let b:surround_{char2nr("d")} = "\\left\1delim: \1\r\\right\1\r(\r)\r[\r]\r{\r}\r<\r>\1"
+    "if b:translate_tex_unicode
+    "    let b:surround_{char2nr("N")} = "∥\r∥"
+    "else
+    let b:surround_{char2nr("n")} = "\\lVert\r\\rVert"
+    let b:surround_{char2nr("N")} = "\\left\\|\r\\right\\rVert"
+    "endif
 
     imap <C-/> 
     nmap <buffer> <leader>o cicoperatorname{<C-R>"}<ESC>
@@ -111,7 +123,6 @@ function! VimtexPreSetup()
     call vimtex#imaps#add_map( {'lhs' : '/', 'rhs' : '\wedge'} )
     call vimtex#imaps#add_map( {'lhs' : '^', 'rhs' : '\bigwedge'} )
     call vimtex#imaps#add_map( {'lhs' : 'o', 'rhs' : '\circ'} )
-    call vimtex#imaps#add_map( {'lhs' : 'O', 'rhs' : '\otimes'} )
     call vimtex#imaps#add_map( {'lhs' : 'B', 'rhs' : '\bullet'} )
     call vimtex#imaps#add_map( {'lhs' : 'M>', 'rhs' : '\varinjlim'} )
     call vimtex#imaps#add_map( {'lhs' : 'M<', 'rhs' : '\varprojlim'} )
@@ -155,8 +166,8 @@ let b:translate_tex_unicode = 0
 
 augroup vimtex_setup
     au!
-    au FileType tex call TexSetup()
-    au BufEnter *.tex lua imaps_setup()
+    au BufReadPost *.tex call TexSetupBuffer()
+    "au BufReadPost *.tex lua 
     au User VimtexEventInitPre call VimtexPreSetup()
     au User VimtexEventInitPost call VimtexPostSetup()
 augroup END
@@ -177,16 +188,15 @@ function! Tex_tr_FileRead()
     exe "sil doau FileReadPre " . fnameescape(expand("<amatch>"))
     "exe "noautocmd sil r! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
     exe "noautocmd r" . fnameescape(expand("<amatch>"))
-    exe
-    exe "sil doau FileReadPost " .fnameescape(expand("<amatch>"))
     let b:translate_tex_unicode = 1
+    exe "sil doau FileReadPost " .fnameescape(expand("<amatch>"))
 endfunction
 
 function! Tex_tr_BufRead()
     exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
     exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
-    exe "sil doau BufReadPost " .fnameescape(expand("<amatch>"))
     let b:translate_tex_unicode = 1
+    exe "sil doau BufReadPost " .fnameescape(expand("<amatch>"))
 endfunction
 
 function! Tex_tr_FileWrite()
@@ -204,10 +214,10 @@ function! Tex_tr_BufWrite()
 endfunction
 
 function! VimtexPostSetup()
-    lua require('vimtex')
     lua require('tex_tools')
     nnoremap <buffer> <leader>ld :!firefox http://detexify.kirelabs.org/classify.html<CR>
     nnoremap <buffer> <leader>lf :lua expand_font_macros()<CR>
+    au BufReadPost *.tex lua require('vimtex').imaps_setup{}
 endfunction
 
 command! UnicodeToTex py3 tr_change_buffer()

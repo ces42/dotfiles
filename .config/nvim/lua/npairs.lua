@@ -22,6 +22,8 @@ local default = {
     },
 }
 
+
+
 local opt = {}
 
 
@@ -71,6 +73,22 @@ local tex_bracket = function(...)
     rule:use_undo(true)
     rule:with_pair(cond.is_bracket_line())
     return rule
+end
+
+local function is_brackets_balanced_around_position(line, open_char, close_char, col)
+    local balance = 0
+    for i = 1, #line, 1 do
+        local c = line:sub(i, i)
+        if c == open_char then
+            balance = balance + 1
+        elseif balance > 0 and c == close_char then
+            balance = balance - 1
+            if col <= i and balance == 0 then
+                break
+            end
+        end
+    end
+    return balance == 0
 end
 
 -- }}}1
@@ -144,9 +162,27 @@ npairs.add_rules({
     :with_cr(cond.none())
     :with_del(cond.none())
     :use_key(')'),
+  Rule('', ' \\right]', {"tex", "latex"})
+    :with_pair(cond.none())
+    :with_move(function(opts) return opts.char == ']' end)
+    :with_cr(cond.none())
+    :with_del(cond.none())
+    :use_key(']'),
+  Rule('', ' \\right\\}', {"tex", "latex"})
+    :with_pair(cond.none())
+    :with_move(function(opts) return opts.char == '}' end)
+    :with_cr(cond.none())
+    :with_del(cond.none())
+    :use_key('}'),
+  Rule('', ' \\right)', {"tex", "latex"})
+    :with_pair(cond.none())
+    :with_move(function(opts) if opts.char ~= ')' then return false end end)
+    :with_move(function(opts) return is_brackets_balanced_around_position(opts.line, '(', ')', opts.col) end )
+    :with_cr(cond.none())
+    :with_del(cond.none())
+    :use_key(')'),
   }
 )
-
 
 -- "(|)" -> "( | )" by inserting a space 
 -- https://github.com/windwp/nvim-autopairs/wiki/Custom-rules

@@ -105,7 +105,12 @@ require'lualine'.setup {
       { custom_fname, file_status = true, path = 1 },
       --{modified, color = {bg = '#FF4C51', fg='#FFFFFFF', gui = 'bold'}}
     },
-    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_x = {
+            'encoding',
+            -- {'fileformat', symbols = {unix = '', dos = '', mac = ''}},
+            {'fileformat', symbols = {unix = '', dos = '', mac = ''}},
+            'filetype'
+        },
     lualine_y = {'progress', search_cnt},
     --lualine_y = {'progress'}
     lualine_z = {'location'}

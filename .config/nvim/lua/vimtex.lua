@@ -1,7 +1,6 @@
 -- redefine the greek letter imaps to use ensure_math
-local imaps = vim.api.nvim_get_var('vimtex_imaps_list')
 local use_unicode = vim.b.translate_tex_unicode
-
+local s = {}
 
 local shortcuts = {
     a = 'α',
@@ -61,7 +60,8 @@ local shortcuts = {
     ['vl'] = 'ℓ',
 }
 
-function imaps_setup()
+function s.imaps_setup()
+    imaps = vim.api.nvim_get_var('vimtex_imaps_list')
     if vim.b.translate_tex_unicode then
         vim.bo.iminsert = 1
     else
@@ -86,6 +86,8 @@ function imaps_setup()
         --vim.fn['vimtex#imaps#add_map']({lhs = k, rhs = v, wrapper = 'Ensure_math'})
     end
 end
+
+return s
 
 -- BufReadCmd
 --tex_to_chr = {}

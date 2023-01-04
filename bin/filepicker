@@ -16,15 +16,16 @@ IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.toc,*.out,*.fdb_latexmk,
 
 
 out=$(
-fd -L "${IGNORES[@]}" | sed $SED | fzf \
+fd --strip-cwd-prefix -L "${IGNORES[@]}" | sed $SED | fzf $*\
 		--multi \
 		--reverse \
 		--tiebreak=length \
-		--preview 'f=$(echo {} | sed "'$SEDBACK'"); { [ -d $f ] && ls -alh --color=always $f } || { [[ $(file --mime $f) =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f) =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} ||{ [[ $(file --mime $f) =~ binary ]] && echo binary file, $(du -kh $f | cut -f1)B && ls -lah $f } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
-		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i),f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
-		--bind "alt-d:change-prompt(D> )+reload(fd -L --type d $IGNORES)" \
-		--bind "alt-f:change-prompt(F> )+reload(fd -L --type f $IGNORES)"\
-		--bind "f5:reload(fd -L $IGNORES)" \
+		--preview 'f=$(echo {} | sed "'$SEDBACK'"); ls -lah --color=always $f && { [[ $(file --mime $f | awk -F";" "{print $1}") =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ binary ]] && echo binary file } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
+		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i)" \
+		--bind "f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
+		--bind "alt-d:change-prompt(D> )+reload(fd --strip-cwd-prefix -L --type d $IGNORES)" \
+		--bind "alt-f:change-prompt(F> )+reload(fd --strip-cwd-prefix -L --type f $IGNORES)"\
+		--bind "f5:reload(fd --strip-cwd-prefix -L $IGNORES)" \
 		--preview-window "right:50%:border-left:hidden" \
 		--color=fg:#ffffff,hl:#00a000 \
 		--color=fg+:#ffff20,bg+:#262626,hl+:#20ff20 \

@@ -50,7 +50,7 @@ WantedBy=default.target
 ```
 
 
-# Tilting the laptop enable airplane mode
+# Tilting the laptop enables airplane mode
 - Before 22.04 [this](https://askubuntu.com/questions/965595/why-does-airplane-mode-keep-toggling-on-my-hp-laptop-in-ubuntu-18-04/965596#965596) was a fix
 - Now the culprit seems to be the device at `/sys/devices/platform/INT33D5:00` bzw `/dev/input/event21`
 - `modprobe -r intel_hid` fixes this behavior (although the system now is oblivious to being in table mode)
@@ -71,3 +71,7 @@ WantedBy=default.target
 # stop screen from rotating when closing lid
 - https://askubuntu.com/questions/1191182/screen-rotates-90-degrees-after-shutting-lid#1191269
 - reinstall `iio-sensor-proxy`
+
+# Fix lag when using ydotool
+- https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/1858#note_818548
+- For compiling mutter I had to add the `--dpkg-shlibdeps-params=--ignore-missing-info` to `dh_shlipdeps` in `debian/rules`

@@ -1,19 +1,19 @@
 # look at /usr/include/linux/input-event-codes.h to find keycodes for ydotool
-# ctrl = 29, shift = 42, alt plugin: 
+# ctrl = 29, shift = 42, alt = 56, super=125
 swipe:
     3:
         begin:
           command: |-
               wname=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4 | tee "/var/run/user/$(id -u)/fusuma-3finger")
-              logger 'fusuma: window='$wname
+              # logger 'fusuma: window='$wname
               if [ "$wname" = 'Evince' ]; then
-                  logger 'fusuma: pressing alt'
+                  # logger 'fusuma: pressing alt'
                   ydotool key --key-delay 0 56:1 # left alt
               fi
           interval: 0.1
         end:
           command: |-
-              [ "$(cat "/var/run/user/$(id -u)/fusuma-3finger")" = 'Evince' ] && ydotool key --key-delay 0 56:0 && logger "fusuma: unpressing alt" # left alt
+              [ "$(cat "/var/run/user/$(id -u)/fusuma-3finger")" = 'Evince' ] && ydotool key --key-delay 0 56:0 # left alt
         left:
           update:
             #sendkey: "LEFTCTRL+NEXT"
@@ -35,20 +35,20 @@ swipe:
                 NAME=$(cat "/var/run/user/$(id -u)/fusuma-3finger")
                 case $NAME in
                     Spotify)
-                        logger 'fusuma key: AudioNext'
+                        # logger 'fusuma key: AudioNext'
                         xte 'key XF86AudioNext'
                         ;;
                     Evince)
-                        logger 'fusuma key: `'
+                        # logger 'fusuma key: `'
                         ydotool key --key-delay 0 41:1 41:0 # grave (`)
                         ;;
                     *)
-                        logger 'fusuma key ctrl+PgDown'
+                        # logger 'fusuma key ctrl+PgDown'
                         ydotool key --key-delay 0 29:1 109:1 109:0 29:0 # ctrl and PgDown
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.9
+            interval: 1.7
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
@@ -70,20 +70,20 @@ swipe:
                 NAME=$(cat "/var/run/user/$(id -u)/fusuma-3finger")
                 case $NAME in
                     Spotify)
-                        logger 'fusuma key: AudioPrev'
+                        # logger 'fusuma key: AudioPrev'
                         xte 'key XF86AudioPrev'
                         ;;
                     Evince)
-                        logger 'fusuma key: shift+`'
+                        # logger 'fusuma key: shift+`'
                         ydotool key --key-delay 0 42:1 41:1 41:0 42:0 # sfhit + grave (`)
                         ;;
                     *)
-                        logger 'fusuma key ctrl+PgUp'
+                        # logger 'fusuma key ctrl+PgUp'
                         ydotool key --key-delay 0 29:1 104:1 104:0 29:0 # ctrl and PgUp
                         ;;
                 esac
             threshold: 1.0
-            interval: 1.9
+            interval: 1.7
     # 3:
     #     begin:
     #       command: xdotool keydown Alt
@@ -110,8 +110,24 @@ swipe:
                     Tilix)
                         ydotool key --key-delay 0 29:1 42:1 17:1 17:0 42:0 29:0
                         ;;
-                    kitty|firefox|"Firefox Developer Edition"|"Tor Browser")
+                    firefox|"Firefox Developer Edition"|"Tor Browser")
                         ydotool key --key-delay 0 29:1 62:1 62:0 29:0
+                        ;;
+                    kitty)
+                        name=$(xprop -id $(xdotool getactivewindow) WM_NAME | cut -d '"' -f 2)
+                        echo $name
+                        if echo $name | grep "^VI:"; then
+                            # xte 'keydown Control_L' 'keydown Alt_L' 'key Next' 'keyup Alt_L' 'keyup Control_L' 
+                            ydotool key --key-delay 0 1:1 1:0 # esc
+                            sleep 0.003
+                            # ydotool key --key-delay 0 29:1 24:1 24:0 29:0
+                            ydotool type --key-delay 3 ':q'
+                            ydotool key --key-delay 0 28:1 28:0
+                        elif [ "$name" = "htop" ]; then
+                            ydotool type --key-delay 0 'q'
+                        else
+                            ydotool key --key-delay 0 29:1 62:1 62:0 29:0
+                        fi
                         ;;
                     Evince)
                         if [ $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4) = 'Evince' ]; then
@@ -186,6 +202,9 @@ swipe:
                     Rhythmbox)
                         xte 'key XF86AudioNext'
                         ;;
+                    Evince)
+                        ydotool key --key-delay 0 159:1 159:0 # forward key
+                        ;;
                     *)
                         # xte 'keydown Alt_L' 'key Right' 'keyup Alt_L'
                         ydotool key --key-delay 0 56:1 106:1 106:0 56:0
@@ -208,6 +227,9 @@ swipe:
                         ;;
                     Rhythmbox)
                         xte 'key XF86AudioPrev'
+                        ;;
+                    Evince)
+                        ydotool key --key-delay 0 158:1 158:0 # back key
                         ;;
                     *)
                         # xte 'keydown Alt_L' 'key Left' 'keyup Alt_L'
@@ -249,29 +271,35 @@ pinch:
         in:
             # command: xte 'keydown Alt_L' 'keydown Shift_L' 'key Tab' 'keyup Shift_L' 'keyup Alt_L'
             command: ydotool key --key-delay 0 56:1 42:1 1:1 1:0 42:0 56:0
-            threshold: 0.75
+            threshold: 0.85
         out:
             # command: xte 'keydown Alt_L' 'key Tab' 'keyup Alt_L'
             command: ydotool key --key-delay 0 56:1 1:1 1:0 56:0
             # command: ydotool key --key-delay 1 125:1 15:1 15:0 125:0
-            threshold: 0.7
+            threshold: 0.8
 
-# hold:
-#     3:
-#       begin:
-#         command: |-
-#             ydotool key --key-delay 0 56:1 15:1 15:0
-#             sleep 0.01
-#             ydotool key --key-delay 0 42:1 15:1 15:0 42:0
-#         threshold: .5
-#       end:
-#         command:
-#             ydotool key --key-delay 0 56:0
+hold:
+    # 3:
+    #   begin:
+    #     command: |-
+    #         ydotool key --key-delay 0 56:1 15:1 15:0
+    #         sleep 0.01
+    #         ydotool key --key-delay 0 42:1 15:1 15:0 42:0
+    #     threshold: .5
+    #   end:
+    #     command:
+    #         ydotool key --key-delay 0 56:0
+    4:
+      command: |-
+        ydotool key --key-delay 0 125:1 35:1 35:0 125:0
+      threshold: 1.0
+
+
 
 inputs:
     libinput_command_input:
         enable-tap: true
-        verbose: true= 56, super = 125, escape = 1
+        verbose: true
 plugin:
   filters:
     libinput_device_filter:

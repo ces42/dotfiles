@@ -63,7 +63,7 @@ DISABLE_AUTO_TITLE="true"
 # ENABLE_CORRECTION="true"
 
 # Uncomment the following line to display red dots whilst waiting for completion.
-COMPLETION_WAITING_DOTS="true"
+# COMPLETION_WAITING_DOTS="true"
 
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
@@ -230,6 +230,14 @@ bindkey -M menuselect '?' history-incremental-search-forward
 bindkey -s "\e#" "\C-a#\C-m"
 bindkey -s "\eL" "\C-q ls -lah\C-m"
 bindkey -s "\el" "\C-q ls\C-m"
+bindkey "\e[1;3C" forward-char
+bindkey "\e[1;3D" backward-char
+bindkey "\e;" forward-char
+
+noop () { }
+zle -N noop
+bindkey "\e" noop
+KEYTIMEOUT=5
 
 autoload -U select-word-style
 backward-kill-WORD () {
@@ -239,6 +247,17 @@ backward-kill-WORD () {
 }
 zle -N backward-kill-WORD
 bindkey '\C-w' backward-kill-WORD
+
+function home_dir {
+	cd
+	for precmd in $precmd_functions; do
+		$precmd
+	done
+	zle reset-prompt
+}
+zle -N home_dir
+bindkey '\eOP' home_dir
+bindkey '\e[2~' home_dir
 
 # Alt + M toggles mouse
 bindkey "\em" zle-mouse-toggle # Alt + m to toggle mouse

@@ -5,4 +5,4 @@
 # using the standard filelist exclusion mechanism
 # see https://askubuntu.com/questions/690990/can-i-ignore-files-by-pattern-in-deja-dup-backup
 
-/usr/bin/duplicity --include=$HOME/.cache/deja-dup/metadata --exclude-filelist=$HOME/.config/deja-dup-excludes "$@"
+nice -n 1 /usr/bin/duplicity --include=$HOME/.cache/deja-dup/metadata --exclude-filelist=$HOME/.config/deja-dup-excludes "$@"

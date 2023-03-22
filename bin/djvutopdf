@@ -10,7 +10,7 @@ file_in=$(readlink -f "$1")
 file_out=$(readlink -f "$2")
 file_out_basename=$(basename "$file_out")
 
-if [[ -z file_out_basename ]]; then
+if [[ -z $file_out_basename ]]; then
     echo "need output file name" >&2
     exit 2
 fi
@@ -38,9 +38,9 @@ tiffsplit tmp_multipage.tiff tmp_page_
 rm tmp_multipage.tiff
 num_pages=$(djvused -e 'n' "$file_in")
 strlen_num_pages="${#num_pages}"
-i=0
-for page_alpha in tmp_page_*; do
-    i=$[i+1]
+
+task() {
+	i=$1
     j=$(printf "%0${strlen_num_pages}d" $i)
     mv $page_alpha tmp_page_${j}.tiff
 
@@ -52,25 +52,42 @@ for page_alpha in tmp_page_*; do
     # understand the output from `djvu2hocr`.
 
     djvu2hocr "$file_in" -p $i | sed 's/ocrx/ocr/g' > tmp_page_${j}.html
+}
+
+i=0
+num=0
+N=6
+(
+for page_alpha in tmp_page_*; do
+	num=$(($num+1))
+	((i=i%N)); ((i++==0)) && wait
+	task $num &
 done
+)
 
 
 #
 # Generate the TOC
 #
 
-djvused -e 'print-outline' "$file_in" > toc.txt
+cd $initial_directory
+djvused -e 'print-outline' "$file_in" > $tmpdir/toc.txt
 
 # The output returned by `djvused` has an s-expression like
 # tree structure, which is incompatible with the indentation based
 # structure used by `pdfbeads`
 
-djvu2pdf_toc_parser.py < toc.txt > toc.out.txt
+djvu2pdf_toc_parser.py < $tmpdir/toc.txt > $tmpdir/toc.out.txt
 
 
 #
 # Generate the final PDF
 #
+cd $tmpdir
 
 pdfbeads --toc toc.out.txt -o output.pdf
-mv output.pdf "$file_out"
+
+cd $initial_directory
+
+mv $tmpdir/output.pdf "$file_out"
+

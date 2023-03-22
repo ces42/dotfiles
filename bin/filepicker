@@ -1,4 +1,5 @@
 #!/bin/env bash
+#invoke with sh -c "xdotool search --classname fzf-filepicker windowmap; xdotool search --classname fzf-filepicker windowactivate || stterm -n fzf-filepicker -g '148x25+100+200' -f 'Source Code Pro-14' -e 'filepicker'"
 #{sleep .01; wmctrl -r :ACTIVE: -b toggle,skip_taskbar}&!
 SHORTENS=('Books' 'Uni' 'BooksMath' 'papers')
 for d in ${SHORTENS[@]}; do
@@ -66,7 +67,12 @@ elif [[ $mode == "ctrl-]" ]]; then
 			sleep 0.05
 		done
 		xdotool windowmove $xid 100 100
-		xdotool mousemove --sync -w "$xid" 1 1 mousedown 1 mousemove $X $Y
+		sleep 0.02
+		xdotool mousemove --sync -w "$xid" 1 1
+		sleep 0.02
+		xdotool mousedown 1
+		sleep 0.02
+		xdotool mousemove $X $Y
 	done
 else
 	#for_vim=""
@@ -86,3 +92,5 @@ else
 	#	eval detach kitty -e "vi -p $for_vim"
 	#fi
 fi
+
+done

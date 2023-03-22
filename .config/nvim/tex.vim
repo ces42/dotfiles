@@ -1,4 +1,5 @@
 let g:UNICODE_ENABLED=1
+let g:vimtex = 1
 
 function! TexSetupBuffer()
     " https://castel.dev/post/lecture-notes-1
@@ -18,23 +19,79 @@ function! TexSetupBuffer()
     "imap <buffer> <F14> <C-\><C-O>tsd
     imap <buffer> <C-0> <C-\><C-O>tsd
     imap <buffer> <C-9> <C-\><C-O>tsd
+    inoremap <buffer> <C-4> <C-\><C-o>f$<right>
+    inoremap <buffer> <expr> ² vimtex#syntax#in_mathzone() ? '^2' : '²'
+    inoremap <buffer> <expr> ³ vimtex#syntax#in_mathzone() ? '^3' : '³'
+    nmap <buffer> g% VaeS%
+    nmap <buffer> tsa ts$csealign<CR>g%vie:s/\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/<CR>
     "nnoremap <buffer> ci= F=lct=  <left>
     "nnoremap <buffer> ci+ F+lct+  <left>
 
     " ys<textobj>c to sorround with latex command
-    let b:surround_{char2nr("c")} = "\\\1command: \1{\r}"
-    let b:surround_{char2nr("s")} = "\\{\r\\}"
-    let b:surround_{char2nr("S")} = "\\left\\{\r\\right\\}"
-    let b:surround_{char2nr("d")} = "\\left\1delim: \1\r\\right\1\r(\r)\r[\r]\r{\r}\r<\r>\1"
-    "if b:translate_tex_unicode
-    "    let b:surround_{char2nr("N")} = "∥\r∥"
-    "else
-    let b:surround_{char2nr("n")} = "\\lVert\r\\rVert"
-    let b:surround_{char2nr("N")} = "\\left\\|\r\\right\\rVert"
+    " let b:surround_{char2nr("c")} = "\\\1command: \1{\r}"
+    " let b:surround_{char2nr("s")} = "\\{\r\\}"
+    " let b:surround_{char2nr("S")} = "\\left\\{\r\\right\\}"
+    " let b:surround_{char2nr("d")} = "\\left\1delim: \1\r\\right\1\r(\r)\r[\r]\r{\r}\r<\r>\1"
+    " "if b:translate_tex_unicode
+    " "    let b:surround_{char2nr("N")} = "∥\r∥"
+    " "else
+    " let b:surround_{char2nr("n")} = "\\lVert\r\\rVert"
+    " let b:surround_{char2nr("N")} = "\\left\\|\r\\right\\rVert"
     "endif
+
+lua << EOF
+conf = require('nvim-surround.config')
+require('nvim-surround').buffer_setup({
+    surrounds = {
+        ['c'] = {
+            add = function()
+            local result = conf.get_input("command: ")
+            if result then
+                return { { "\\" .. result .. "{" }, { "}" } }
+                end
+                end,
+        },
+        ['e'] = {
+            add = function()
+            local result = conf.get_input("env: ")
+            if result then
+                return { { "\\begin{" .. result .. "} " }, { " \\end{" .. result .. "}" } }
+                end
+                end,
+        },
+        ['S'] = {
+            add = {'\\left\\{', '\\right\\}'},
+            find = '\\left\\{.-\\right\\}',
+            delete = "^(.......)().-(.......)()$",
+        },
+        ['s'] = {
+            add = {'\\{', '\\}'},
+            find = '\\{.-\\}',
+            -- find = function() -- WIP
+            --     match = '\\{.-\\}'
+            --     line1 = match.first_pos[1]
+            --     col1 = match.first_pos[2]
+            --     first_line = string.subvim.api.nvim_get_buf_lines(0, line1, line1, 1):sub()
+            -- end
+            delete = "^(..)().-(..)()$",
+        },
+        ['n'] = {
+            add = {'\\lVert ', '\\rVert '},
+            find = '\\lVert.-\\rVert',
+            delete = "^(...... ?)().-(......)()$",
+        },
+        ['N'] = {
+            add = {'\\left\\|', '\\right\\|'},
+            find = '\\left\\|.-\\right\\|',
+            delete = "^(........)().-(........)()$",
+        },
+    }
+})
+EOF
 
     imap <C-/> 
     nmap <buffer> <leader>o cicoperatorname{<C-R>"}<ESC>
+    nmap <buffer> ysm ysi$
     setlocal matchpairs=(:) " vimtex already highlights [] and {} (much faster than matchpairs or matchpairs.nvim)
     setlocal iskeyword=@,48-57,192-255
 
@@ -60,6 +117,7 @@ function! VimtexPreSetup()
     let g:vimtex_quickfix_mode = 2
     let g:vimtex_quickfix_autoclose_after_keystrokes = 3
     let g:tex_flavor = 'latex'
+    let g:vimtex_echo_verbose_input = 0
 
     set fdm=marker
     "let g:vimtex_fold_enabled = 1
@@ -123,6 +181,7 @@ function! VimtexPreSetup()
     call vimtex#imaps#add_map( {'lhs' : '/', 'rhs' : '\wedge'} )
     call vimtex#imaps#add_map( {'lhs' : '^', 'rhs' : '\bigwedge'} )
     call vimtex#imaps#add_map( {'lhs' : 'o', 'rhs' : '\circ'} )
+    call vimtex#imaps#add_map( {'lhs' : 'O', 'rhs' : '\otimes'} )
     call vimtex#imaps#add_map( {'lhs' : 'B', 'rhs' : '\bullet'} )
     call vimtex#imaps#add_map( {'lhs' : 'M>', 'rhs' : '\varinjlim'} )
     call vimtex#imaps#add_map( {'lhs' : 'M<', 'rhs' : '\varprojlim'} )
@@ -164,6 +223,18 @@ endfunction
 
 let b:translate_tex_unicode = 0
 
+if g:UNICODE_ENABLED
+    augroup tex_translate
+        au!
+        lua require('tr_tex_chr')
+        au BufReadPre *.tex let b:lastpos = line("'\"")
+        " au BufReadCmd *.tex call Tex_tr_BufRead()
+        au BufReadPost *.tex lua tr_buffer()
+        au BufReadPost *.tex let b:translate_tex_unicode = 1 | exe b:lastpos .. 'mark \"' | normal! g`"
+        " au FileReadCmd *.tex call Tex_tr_FileRead()
+    augroup END
+endif
+
 augroup vimtex_setup
     au!
     au BufReadPost *.tex call TexSetupBuffer()
@@ -171,14 +242,6 @@ augroup vimtex_setup
     au User VimtexEventInitPre call VimtexPreSetup()
     au User VimtexEventInitPost call VimtexPostSetup()
 augroup END
-
-if g:UNICODE_ENABLED
-    augroup tex_translate
-        au!
-        au BufReadCmd *.tex call Tex_tr_BufRead()
-        au FileReadCmd *.tex call Tex_tr_FileRead()
-    augroup END
-endif
 
 " ----------------------------------------------------------------------------------------
 " Commands for read/write with unicode substitution
@@ -192,12 +255,21 @@ function! Tex_tr_FileRead()
     exe "sil doau FileReadPost " .fnameescape(expand("<amatch>"))
 endfunction
 
-function! Tex_tr_BufRead()
-    exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
-    exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
-    let b:translate_tex_unicode = 1
-    exe "sil doau BufReadPost " .fnameescape(expand("<amatch>"))
-endfunction
+" function! Tex_tr_BufRead()
+"     let l1 = line("'\"")
+"     exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
+"     " let l2 =  line("'\"")
+"     " exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+"     exe "noautocmd e " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+"     " let l3 = line("'\"")
+"     lua require('tr_tex_chr')
+"     lua tr_buffer()
+"     let b:translate_tex_unicode = 1
+"     exe "sil doau BufReadPost " .fnameescape(expand("<amatch>"))
+"     exe l1 .. 'mark \"'
+"     normal! g`"
+"     " echo l1 l2 l3 line("'\"")
+" endfunction
 
 function! Tex_tr_FileWrite()
     exe "sil doau FileWritePre " . fnameescape(expand("<amatch>"))
@@ -217,8 +289,9 @@ function! VimtexPostSetup()
     lua require('tex_tools')
     nnoremap <buffer> <leader>ld :!firefox http://detexify.kirelabs.org/classify.html<CR>
     nnoremap <buffer> <leader>lf :lua expand_font_macros()<CR>
-    au BufReadPost *.tex lua require('vimtex').imaps_setup{}
 endfunction
+
+au BufReadPost *.tex lua require('vimtex').imaps_setup()
 
 command! UnicodeToTex py3 tr_change_buffer()
 
@@ -232,6 +305,12 @@ function! AlwaysMath()
         return 1
     endfunction
 endfunction
+
+" ------------------------------------------------------------------------------
+" file-specific config
+" ------------------------------------------------------------------------------
+
+au! BufAdd *diary.tex :LspStop
 
 function! tex#add_delim_modifiers(width) abort " {{{1
   call vimtex#util#undostore()

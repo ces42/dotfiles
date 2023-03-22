@@ -4,113 +4,11 @@ let g:python3_host_prog = expand('/usr/bin/python3')
 set tabstop=4
 set shiftwidth=4
 
-" configure vim-plug plugin manager {{{
+set termguicolors
+" ~/.config/nvim/lua/init.lua
+lua require('init')
 
-packadd packer.nvim
-"packloadall
-lua << END
-require('packer').startup(function()
-    use 'wbthomason/packer.nvim'
-    use {'lewis6991/impatient.nvim', disable = true}
-    use {'lervag/vimtex', event = {'BufReadPre *.tex', 'BufNewFile *.tex'}}
-    use 'nvim-lualine/lualine.nvim'
-    use 'tpope/vim-commentary'
-    use 'tpope/vim-surround' -- sourround things, change surrounders
-    use 'tpope/vim-repeat' -- makes plugin maps repeatable
-    use 'junegunn/fzf.vim'
-    use 'tpope/vim-fugitive' -- Git integration
-    use {'junegunn/fzf', run = function() vim.fn['fzf#install']() end }
-    use {'dkarter/bullets.vim', ft = {'txt', 'pandoc'}} -- automatically continue bullet lists
-    use {'vim-pandoc/vim-pandoc-syntax', ft = 'pandoc'}
-    use {'vim-pandoc/vim-pandoc', ft = 'pandoc'} -- for pandoc
-    use {'sirver/UltiSnips', ft = {'tex', 'python', 'pandoc'}, config = 'vim.api.nvim_create_autocmd({"BufLeave"}, {pattern = {"*"}, callback = "UltiSnips#LeavingBuffer"})'} -- insert snippets
-    use {'lambdalisue/suda.vim', cmd = {'WW', 'SudaWrite'}} -- sudo-save with :WW
-    use {'vim-python/python-syntax', ft = 'python'}
-    use {'tpope/vim-scriptease', disable = true}
-    use {'ces42/firenvim', run = function() vim.fn['firenvim#install'](0) end}
-    use 'windwp/nvim-autopairs'
-    use {'nvim-treesitter/nvim-treesitter', run = function() vim.cmd('TSUpdate') end}
-    use 'neovim/nvim-lspconfig'
-    use {'easymotion/vim-easymotion', event = 'VimEnter'}
-    use 'nvim-treesitter/nvim-treesitter-textobjects'
-    -- use {'folke/noice.nvim', event = 'VimEnter', config = function() require("noice").setup() end, require = {"MunifTanjim/nui.nvim"}}
-    -- use "MunifTanjim/nui.nvim"
-end)
-END
-
-"call plug#begin()
-"    "Plug 'lewis6991/impatient.nvim'
-"    Plug 'lervag/vimtex', {'for': ['pandoc', 'tex']} " TeX stuff
-"    "Plug 'Valloric/YouCompleteMe' " Python, C++, ... autocompletion
-"    "Plug 'vim-airline/vim-airline' " fancy statusbar
-"    Plug 'nvim-lualine/lualine.nvim'
-"    "Plug 'scrooloose/nerdcommenter' " provides (filetype-aware) maps for commenting stuff out
-"    Plug 'tpope/vim-commentary'
-"    "Plug 'tpope/vim-sleuth' " autodetecs indetation type of file - slow on startup
-"    Plug 'tpope/vim-surround' " sourround things, change surrounders
-"    Plug 'tpope/vim-repeat' " makes plugin maps repeatable
-"    "Plug 'dimbleby/black.vim' " slow
-"    Plug 'junegunn/fzf.vim'
-"    Plug 'tpope/vim-fugitive' " Git integration
-"    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-"    Plug 'dkarter/bullets.vim' " automatically continue bullet lists
-"    Plug 'vim-pandoc/vim-pandoc-syntax', {'for': 'pandoc'}
-"    Plug 'vim-pandoc/vim-pandoc', {'for': ['pandoc', 'pandoc-tex']} " for pandoc
-"    Plug 'sirver/UltiSnips' " insert snippets
-"    "Plug 'honza/vim-snippets', {'for': ['tex', 'snippets']} " lots of predefined snippets
-"    Plug 'lambdalisue/suda.vim' " sudo-save with :W
-"    "Plug 'jiangmiao/auto-pairs' " autocomplete ( etc.
-"    Plug 'vim-python/python-syntax', {'for': 'python'}
-"    Plug 'tpope/vim-scriptease'
-"    "Plug  'tweekmonster/startuptime.vim'
-"    Plug 'ces42/firenvim', { 'do': { _ -> firenvim#install(0) } }
-"    "Plug 'klen/python-mode'
-"    "Plug 'mhinz/vim-startify' " fancy start screen
-"    "Plug 'ap/vim-css-color'
-"    Plug 'windwp/nvim-autopairs'
-"    "Plug 'wellle/targets.vim'
-"    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-"    Plug 'neovim/nvim-lspconfig'
-"    "Plug 'neoclide/coc.nvim', {'branch': 'release'}
-"    "Plug 'monkoose/matchparen.nvim'
-"    "Plug 'ggandor/lightspeed.nvim'
-"    Plug 'easymotion/vim-easymotion'
-"    "Plug 'haya14busa/incsearch.vim' "just jump between matches during incsearch w/ <C-g>
-"    "Plug 'adelarsq/vim-matchit'
-"    "Plug 'abecodes/tabout.nvim'
-"    "Plug 'lukas-reineke/indent-blankline.nvim', {'for': ['vim', 'python', 'snippets']}
-"    "Plug 'Konfekt/FastFold'
-"    "Plug 'Raimondi/delimitMate'
-"    Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-"call plug#end()
-"" }}}
-
-"let g:loaded_matchparen = 1
-"Youcompleteme fix
-"let g:ycm_global_ycm_extra_conf = '~/.config/nvim/plugged/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
-"let g:ycm_min_num_of_chars_for_completion=4
-
-" airline {{{
-"if !exists('g:airline_symbols')
-"   let g:airline_symbols = {}
-"endif
-"let g:airline_symbols.maxlinenr = '' " used to be '㏑'
-"let g:airline_symbols.linenr = ' ' " used to be '☰'
-"let g:airline_symbols.colnr = ':'
-"let g:airline_symbols.dirty='⚡'
-"let g:airline_symbols.branch = ''
-"let g:airline#extensions#fzf#enabled = 1
-""let g:airline_powerline_fonts = 1
-"let g:airline#extensions#whitespace#mixed_indent_algo = 2
-"let g:airline#extensions#whitespace#trailing_format = 'tr:%s'
-"let g:airline#extensions#whitespace#mixed_indent_file_format = 'mi:%s'
-"let g:airline#extensions#wordcount#formatter#default#fmt = '%sW'
-" }}}
-
-let g:pymode_python = 'python3'
-
-"" bullets.vim
-"let g:bullets_enabled_file_types = ['markdown', 'gitcommit']
+" let g:pymode_python = 'python3'
 
 ""python-syntax {{{
 "let g:python_highlight_string_format = 1
@@ -120,13 +18,6 @@ let g:pymode_python = 'python3'
 "let g:python_highlight_operators = 1
 "let g:python_highlight_class_vars = 1
 " }}}
-
-let g:bullets_enabled_file_types = [
-    \ 'markdown',
-    \ 'text',
-    \ 'gitcommit',
-    \ 'scratch'
-    \]
 
 " vim-pandoc
 let g:pandoc#folding#level=4
@@ -145,21 +36,15 @@ let g:AutoPairsShortcutBackInsert='<M-v>'
 "map g/ <Plug>(incsearch-stay)
 
 " easymotion
-map <Space> <Plug>(easymotion-prefix)
+map <leader> <Plug>(easymotion-prefix)
 
 " filetype plugin indent on " already done by plug#end()
 " syntax on " already done by plug#end()
-set termguicolors
 set guifont=JuliaMono:h12
 color PaperColor
+" colorscheme catppuccin-mocha
 
-"~/.config/nvim/lua/npairs.lua
-lua require('npairs')
-"~/.config/nvim/lua/ts_config.lua
-lua require('ts_config')
 "lua require('texlab')
-" ~/.config/nvim/lua/lualine_config.lua
-lua require('lualine_config')
 "lua require('matchparen').setup()
 "lua require('tabout').setup{
 "            \    tabkey = '<C-j>',
@@ -178,9 +63,8 @@ lua require('lualine_config')
 "            \    }
 "            \}
 
-lua require('lspconfig').pyright.setup{}
-lua require('lspconfig').texlab.setup{cmd = {'/home/ca/.cargo/bin/texlab'}}
-set signcolumn=no
+
+" set signcolumn=no
 
 hi IndentBlanklineChar guifg=#2a2a2a
 "lua require("indent_blankline").setup {
@@ -293,6 +177,10 @@ set nrformats=alpha,hex,bin
 " linenumbers
 set number
 set relativenumber
+autocmd BufLeave * : if &nu | setlocal norelativenumber | endif
+autocmd BufEnter * : if &nu | setlocal relativenumber | endif
+autocmd FocusLost * : if &nu | setlocal norelativenumber | endif
+autocmd FocusGained * : if &nu | setlocal relativenumber | endif
 
 "" line wrapping
 " breakindent can make insert mode slow
@@ -306,7 +194,8 @@ set shortmess-=T " don't truncate messages
 " show warning when search wraps
 set shortmess+=S " this disables the match counter :/
 
-set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
+set modelineexpr
+
 " }}}
 
 " TODO something for folding
@@ -353,8 +242,6 @@ map <leader>8 :set colorcolumn=80<cr>
 map <leader>9 :set colorcolumn=90<cr>
 map <leader>0 :set colorcolumn=100<cr>
 map <leader>1 :set colorcolumn=<cr>
-" press '\a' to show tabs
-map <leader>a :set list!<cr>
 " press '\f' to show foldcolumn
 function! ToggleFoldcolumn()
     if &foldcolumn
@@ -420,21 +307,29 @@ cnoremap <M-n> <Down>
 cnoremap <C-.> %:h
 " Spacebar inserts space in normal mode too
 "nnoremap <Space> i <Esc>l
-nmap <space><space> i<space><esc>l<space>
+nmap <space> i<space><esc>l
 "split navigations
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
+
+nnoremap <C-/> :noh<CR>
 " 'g/' to search for selected text in visual mode
 xnoremap g/ "zy/<C-R>z<CR>
 " gy to copy the whole buffer into the Ctrl+C clipboard
 nnoremap gy gg"+yG``
-" C-T to open fzf in normal mode
-nnoremap <C-T> :Files ~<CR>
+
+" C-T to open Telescope file picker in normal mode
+nnoremap <C-T> <cmd>Telescope find_files<CR>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Don't clutter unnamed register with one-character deletes
 "nnoremap x "-x "disable this because I *do* like doing xp
+" vnoremap <c-d> "zx
+vnoremap x "zx
 nnoremap <Del> "-x
 
 " Shift-enter does the same as o but w/o changing mode
@@ -454,16 +349,12 @@ vnoremap <S-Right> <Right>
 " gcy to copy insert commented of a line above it
 nmap gcy m`yyPgcc``
 
-" gY to visually select current "line" w.r.t line wrap
+" gV to visually select current "line" w.r.t line wrap
 nnoremap gV g^vg$
 
 " go and gO to insert *indented* line above/below w/o leaving normal mode
 nnoremap go o.<BS><ESC>
 nnoremap gO O.<BS><ESC>
-
-" gs as alias for ys (vim-surround)
-nmap gs ys
-nmap gss yss
 
 "function! Extract(type) " currently not used
     ""let s = line("'[")
@@ -474,12 +365,43 @@ nmap gss yss
 "endfunction
 "nnoremap <silent> \e :set opfunc=Extract<cr>g@
 
+nnoremap <f5> :set autochdir<bar>:w<bar>make %<cr>
+imap <f5> <C-o>:w<bar>make<cr>
+
+nnoremap <F3> :%s//g<Left><Left>
+inoremap <F3> <Esc>:%s//g<Left><Left>
+
+nnoremap g/ /\c<left><left>
+
+" <C-;> as a more easily repeatable alternative to g;
+nnoremap <C-;> g;
+inoremap <C-;> <C-\><C-o>g;
+
+" Alt-backspace to undo in insert mode
+inoremap <A-BS> <C-o>u
+
+" gs as alias for ys (vim-surround)
+nmap gs ys
+nmap gss yss
+
+" AltGr + s for surrounding
+nmap ß ys
+nmap ßß yss
+
+" }}}
+
+
+" commands {{{
 " save when file is readonly using sudo
-command! WW SudaWrite %|set nomodified
+command! WW Lazy load suda.vim | SudaWrite % | e | set noreadonly
 
 "common typos
+command! W  w
 command! Wq wq
 command! WQ wq
+command! Wqa wqa
+command! Qa qa
+command! Q  q
 
 " fugitive shortcuts
 command! Gc Git commit % -m .
@@ -489,8 +411,8 @@ command! GL Git pull
 command! Gp Git push
 command! GP Git push
 
-command! Rc tabe ~/.config/nvim/init.vim
-command! RC tabe ~/.config/nvim/init.vim
+command! Rc tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
+command! RC tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
 
 " QQ to leave vim
 nnoremap QQ :qa<enter>
@@ -520,14 +442,8 @@ function! RichPaste(...)
     let &shellredir=_shellredir
 endfunction
 
-nnoremap <f5> :set autochdir<bar>:w<bar>make %<cr>
-imap <f5> <C-o>:w<bar>make<cr>
-
-nnoremap <F3> :%s//g<Left><Left>
-inoremap <F3> <Esc>:%s//g<Left><Left>
-
-nnoremap g/ /\c<left><left>
 " }}}
+
 
 " file type settings {{{
 au Filetype C set
@@ -542,17 +458,21 @@ au Filetype vim set
             \ softtabstop=4
             \ expandtab
 
-"autocmd FileType markdown let g:airline#extensions#whitespace#checks = [ 'indent' ]
+" " vim-commentary
+" au FileType * let b:commentary_format=&commentstring
 
-" vim-commentary
-au FileType * let b:commentary_format=&commentstring
+au BufRead,BufNewFile *.conf setfiletype conf
 
 " }}}
 
 " customize terminal title
-autocmd BufEnter * let &titlestring="VI:" . substitute(expand("%:p"), $HOME, '~', 0)
-"autocmd BufEnter * let &titlestring="\ue62b:" . substitute(expand("%:p"), $HOME, '~', 0)
+autocmd BufEnter * let &titlestring="vi:" . substitute(expand("%:p"), $HOME, '~', 0)
+" autocmd BufEnter * let &titlestring="\ue62b:" . substitute(expand("%:p"), $HOME, '~', 0)
 set title
+
+" report directory changes to terminal
+" https://github.com/neovim/neovim/issues/21771
+autocmd DirChanged * call chansend(v:stderr, printf("\033]7;file://%s\033\\", v:event.cwd))
 
 " customize cursor, highlighting etc {{{
 set cul
@@ -566,7 +486,7 @@ augroup cursor
     autocmd InsertLeave * highlight  CursorLine guibg=#101010
 augroup END
 
-set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175 " from :h guicursor
+set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait300-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175 " from :h guicursor
 "hi Search ctermfg=15
 "hi IncSearch guibg=#30e060
 hi WarningMsg guifg=white guibg=red gui=bold "to make search wrapping more obvious
@@ -577,6 +497,9 @@ hi SpellRare cterm=undercurl ctermbg=none guisp=magenta
 
 hi Conceal ctermfg=lightblue ctermbg=none guibg=NONE
 
+hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
+
+" hi Cursor guifg=white
 
 hi pandocStrikeout gui=strikethrough
 " }}}
@@ -605,6 +528,7 @@ augroup HlYank
 augroup END
 " }}}
 
+ autocmd BufWinEnter * if !exists('b:has_been_entered')|let b:has_been_entered = 1|silent! .foldopen|endif
 
 " filetype specific settings {{{
 

@@ -4,15 +4,15 @@ local cond = require('nvim-autopairs.conds')
 local basic = require('nvim-autopairs.rules.basic')
 local utils = require('nvim-autopairs.utils')
 
-local default = {
-    map_bs = true,
+local opt = {
+    map_bs = vim.g.vimtex == nil,
     map_c_w = false,
     map_cr = true,
     disable_filetype = { 'TelescopePrompt', 'spectre_panel' },
     disable_in_macro = false,
     disable_in_visualblock = false,
     ignored_next_char = string.gsub([[ [%w%%%'%[%"%.] ]], '%s+', ''),
-    check_ts = false,
+    check_ts = false, -- settings this to true made pressing `(` at (text|) only insert a single quote
     enable_moveright = true,
     enable_afterquote = true,
     enable_check_bracket_line = true,
@@ -23,14 +23,9 @@ local default = {
 }
 
 
-
-local opt = {}
-
-
 npairs.setup(opt)
 
 -- re-do setup because the standard rules aren't optimal for latex
-local opt = vim.tbl_deep_extend('force', default, opt)
 
 -- from nvim-autopairs/rules/basic.lua {{{1
 local basic = function(...)
@@ -106,8 +101,8 @@ npairs.remove_rule("'")
 
 npairs.add_rules({
     bracket("(", ")", "-tex"),
-    tex_bracket("(", ")", "tex")
-        --:with_move(cond.move_right)
+    bracket("(", ")", "tex")
+        :with_move(cond.move_right)
         :with_pair(cond.not_before_text('lr'))
         :with_pair(cond.not_before_text('^')),
     bracket("[", "]", "-tex"),
@@ -130,91 +125,97 @@ npairs.add_rules({
 )
 
 npairs.add_rules({
-  Rule("$", "$", {"tex", "latex"})
-    -- don't add a pair if inside a comment
-    :with_pair(function(opts) if vim.call('vimtex#syntax#in_comment') == 1 then return false end end)
-    -- not directly after a word character
-    :with_pair(cond.not_before_regex('%w'))
-    :with_pair(cond.not_before_text('$'))
-    -- move right when repeat character
-    :with_move(function(opts) return opts.char == '$' end)
-    -- disable adding a newline when you press <cr>
-    :with_cr(cond.none()),
-  Rule("\\{", "\\}", {"tex", "latex"})
-    -- only in mathmode
-    :with_pair(function(opts) if vim.call('vimtex#syntax#in_mathzone') ~= 1 then return false end end)
-    :with_move(function(opts) return opts.char == '}' end),
-  Rule('', '\\right]', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == ']' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(']'),
-  Rule('', '\\right\\}', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == '}' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key('}'),
-  Rule('', '\\right)', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == ')' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(')'),
-  Rule('', ' \\right]', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == ']' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(']'),
-  Rule('', ' \\right\\}', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == '}' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key('}'),
-  Rule('', ' \\right)', {"tex", "latex"})
-    :with_pair(cond.none())
-    :with_move(function(opts) if opts.char ~= ')' then return false end end)
-    :with_move(function(opts) return is_brackets_balanced_around_position(opts.line, '(', ')', opts.col) end )
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(')'),
-  }
+    Rule("$", "$", {"tex", "latex"})
+        -- don't add a pair if inside a comment
+        :with_pair(function(opts)
+            if vim.call('vimtex#syntax#in_comment') == 1 or
+                vim.fn['vimtex#syntax#in_mathzone'](vim.fn.line('.'), vim.fn.col('$')-1) == 1
+            then
+                return false
+            end
+        end)
+        -- not directly after a word character
+        :with_pair(cond.not_before_regex('%w'))
+        :with_pair(cond.not_before_text('$'))
+        -- move right when repeat character
+        :with_move(function(opts) return opts.char == '$' end)
+        -- disable adding a newline when you press <cr>
+        :with_cr(cond.none()),
+    Rule("\\{", "\\}", {"tex", "latex"})
+        -- only in mathmode
+        :with_pair(function(opts) if vim.call('vimtex#syntax#in_mathzone') ~= 1 then return false end end)
+        :with_move(function(opts) return opts.char == '}' end),
+    Rule('', '\\right]', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == ']' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(']'),
+    Rule('', '\\right\\}', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == '}' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key('}'),
+    Rule('', '\\right)', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == ')' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(')'),
+    Rule('', ' \\right]', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == ']' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(']'),
+    Rule('', ' \\right\\}', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == '}' end)
+        :with_cr(cond.none())
+:with_del(cond.none())
+        :use_key('}'),
+    Rule('', ' \\right)', {"tex", "latex"})
+        :with_pair(cond.none())
+        :with_move(function(opts) if opts.char ~= ')' then return false end end)
+        :with_move(function(opts) return is_brackets_balanced_around_position(opts.line, '(', ')', opts.col) end )
+:with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(')'),
+}
 )
 
 -- "(|)" -> "( | )" by inserting a space 
 -- https://github.com/windwp/nvim-autopairs/wiki/Custom-rules
 npairs.add_rules {
-  Rule(' ', ' ')
-    :with_pair(function(opts)
-      local pair = opts.line:sub(opts.col -1, opts.col)
-      return vim.tbl_contains({ '()', '{}', '[]' }, pair)
-    end)
-    :with_move(cond.none())
-    :with_cr(cond.none())
-    :with_del(function(opts)
-      local col = vim.api.nvim_win_get_cursor(0)[2]
-      local context = opts.line:sub(col - 1, col + 2)
-      return vim.tbl_contains({ '(  )', '{  }', '[  ]' }, context)
-    end),
-  Rule('', ' )')
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == ')' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(')'),
-  Rule('', ' }')
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == '}' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key('}'),
-  Rule('', ' ]')
-    :with_pair(cond.none())
-    :with_move(function(opts) return opts.char == ']' end)
-    :with_cr(cond.none())
-    :with_del(cond.none())
-    :use_key(']'),
+    Rule(' ', ' ')
+        :with_pair(function(opts)
+            local pair = opts.line:sub(opts.col -1, opts.col)
+            return vim.tbl_contains({ '()', '{}', '[]' }, pair)
+        end)
+        :with_move(cond.none())
+        :with_cr(cond.none())
+        :with_del(function(opts)
+            local col = vim.api.nvim_win_get_cursor(0)[2]
+            local context = opts.line:sub(col - 1, col + 2)
+            return vim.tbl_contains({ '(  )', '{  }', '[  ]' }, context)
+        end),
+    Rule('', ' )')
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == ')' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(')'),
+    Rule('', ' }')
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == '}' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key('}'),
+    Rule('', ' ]')
+        :with_pair(cond.none())
+        :with_move(function(opts) return opts.char == ']' end)
+        :with_cr(cond.none())
+        :with_del(cond.none())
+        :use_key(']'),
 }

@@ -1,4 +1,4 @@
-local custom_theme = require'lualine.themes.powerline_dark'
+ local custom_theme = require'lualine.themes.powerline_dark'
 custom_theme.normal.c.fg = '#50EF70'
 custom_theme.command.c.fg = '#50EF70'
 
@@ -7,18 +7,6 @@ custom_theme.normal.a.bg = '#EFF810'
 custom_theme.inactive.a.fg = '#A0A0A0'
 custom_theme.inactive.b.fg = '#A0A0A0'
 custom_theme.inactive.c.fg = '#A0A0A0'
-
-local function search_indicator()
-    local s = vim.fn.getreg("/")
-    local disp = ''
-    if s == '' then return '%3p%%' end
-    if string.len(s) <= 12 then
-        disp = s
-    else
-        disp = string.sub(s, 1, 11) .. '…'
-    end
-    return '/' .. disp -- .. ' %3p%%'
-end
 
 -- local function modified()
 --   if vim.bo.modified then
@@ -69,17 +57,37 @@ local function search_cnt()
       else
           disp = string.sub(s, 1, 11) .. '…'
       end
-      return string.format("/%s %s/%s",
-                           disp,
-                           res.current < 100 and res.current or '>99',
-                           res.total < 100 and res.total or '>99'
-                        )
+        return string.gsub(string.format("/%s %s/%s",
+                                      disp,
+                                      res.current < 100 and res.current or '>99',
+                                      res.total < 100 and res.total or '>99'
+                        ),
+                           '%%', '%%%%'
+               )
   else 
       return ""
   end
 end
 
 -- }}}
+
+
+local function format_mode(data)
+    local available_width = (vim.fn.winwidth(0)
+        - #vim.fn.bufname()
+        -- - math.min(#vim.fn.getreg("/"), 12)
+        - #search_cnt()
+        - 26 -- parts x y z
+        - 4 -- padding
+    )
+    if vim.bo.modified then
+        available_width = available_width -  5
+    end
+    if available_width < #data then
+        return data:sub(1,1)
+    end
+    return data
+end
 
 
 require'lualine'.setup {
@@ -94,11 +102,7 @@ require'lualine'.setup {
   sections = {
     lualine_a = {{
       'mode',
-      fmt = function(data)
-        local windwidth = vim.fn.winwidth(0)
-        if windwidth < 80 then return data:sub(1,1) end
-        return data
-      end
+      fmt = format_mode,
     }},
     lualine_b = {'branch', 'diff', 'diagnostics'},
     lualine_c = {

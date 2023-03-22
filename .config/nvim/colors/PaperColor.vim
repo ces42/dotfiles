@@ -2151,8 +2151,11 @@ fun! s:apply_syntax_highlightings()
   "hi texMathSuperSub guifg=#e05010
   hi texMathSuperSub guifg=#d02050
   hi texDelim guifg=#1af42a
+  " hi texDelim guifg=#ff9060
   hi texMathDelim guifg=#f7e859
   "hi texCmd guifg=#b67820
+  hi texCmdEnv guifg=#809080
+  hi texMathCmd guifg=#90d090
 
   "exec 'hi texMathSub' s:fg_blue
   "exec 'hi texMathSuper' s:fg_blue

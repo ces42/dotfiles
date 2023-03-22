@@ -2,12 +2,13 @@
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
 # for profiling zsh startup
-PROFILE_STARTUP=false
+# PROFILE_STARTUP=true
 if [[ "$PROFILE_STARTUP" == true ]]; then
 	zmodload zsh/datetime
 	zmodload zsh/zprof
 	setopt PROMPT_SUBST
-	PS4='+$EPOCHREALTIME %N:%i> '
+	TIME0=$EPOCHREALTIME
+	PS4='+$(( ($EPOCHREALTIME - '$TIME0')*1000 )) %N:%i> '
 	logfile=$(mktemp zsh_profile.XXXXXXXX)
 	echo "Logging to $logfile"
 	exec 3>&2 2>$logfile
@@ -81,14 +82,6 @@ DISABLE_AUTO_TITLE="true"
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
-# Which plugins would you like to load?
-# Standard plugins can be found in ~/.oh-my-zsh/plugins/*
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# ------------------------------------------------------------
-# !! currently this is also uncommented in my-zsh.sh
-# plugins=()
-
 # https://gnunn1.github.io/tilix-web/manual/vteconfig/
 if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
 	source /etc/profile.d/vte.sh
@@ -105,17 +98,99 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
 
 # Plugins {{{
+#
+# Which plugins would you like to load?
+# Standard plugins can be found in ~/.oh-my-zsh/plugins/*
+# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# ------------------------------------------------------------
+# !! currently this is also uncommented in my-zsh.sh
+# plugins=()
+
 _Z_NO_RESOLVE_SYMLINKS="true"
 source ~/.oh-my-zsh/custom/plugins/git/git.plugin.zsh
-ZSH_AUTOSUGGEST_MANUAL_REBIND=1 #https://github.com/zsh-users/zsh-autosuggestions#disabling-automatic-widget-re-binding
+
 source ~/.oh-my-zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
 
-# FIXME this is slow when hitting enter and when pasting
-#source ~/.oh-my-zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-#bindkey '^ ' autosuggest-accept # for zsh-autosuggestions
-
 source ~/.oh-my-zsh/custom/plugins/zsh-completions/zsh-completions.plugin.zsh
+
+# syntax highlighting (this probably should be managed via oh-my-zsh...)
+source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+source ~/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh
+
+source ~/.oh-my-zsh/plugins/zoxide/zoxide.plugin.zsh
+
+source ~/.oh-my-zsh/custom/plugins/zsh-histdb/zsh-histdb.plugin.zsh
+autoload -Uz add-zsh-hook
+
+source /home/ca/.oh-my-zsh/custom/plugins/zsh-histdb-fzf/fzf-histdb.zsh
+
 # }}}
+
+# zsh-autosuggestions {{{
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1 #https://github.com/zsh-users/zsh-autosuggestions#disabling-automatic-widget-re-binding
+
+_zsh_autosuggest_strategy_histdb_top() {
+	local query="
+	select commands.argv from history
+		left join commands on history.command_id = commands.rowid
+		left join places on history.place_id = places.rowid
+		where commands.argv LIKE '$(sql_escape $1)%'
+		group by commands.argv, places.dir, start_time
+		order by places.dir != '$(sql_escape $PWD)', exit_status, start_time desc, count(*) desc
+		limit 1
+		"
+		suggestion=$(_histdb_query "$query")
+}
+
+_zsh_autosuggest_strategy_zoxide() {
+	if [[ "$1" =~ '^z .*' ]]; then
+		query=${1#* }
+	elif [[ "$1" == "z" ]]; then
+		query=''
+	else
+		return
+	fi
+	ans=$(zoxide query $query 2>/dev/null)
+	if [[ $? == 0 ]]; then
+		rel=${ans#$PWD/}
+		if [[ ! "$rel" == "$ans" ]]; then
+			short=$rel
+		else
+			short=$(print -D $ans)
+		fi
+
+		if [[ "$ans" =~ "^$query.*" ]]; then
+			suggestion="z $ans # ✔"
+		elif [[ "$rel" =~ "^$query.*" ]]; then
+			suggestion="z $rel # ✔"
+		# elif [[ "$short" =~ "^$query.*" ]]; then
+		# 	suggestion="z $short # ✔"
+		else
+			suggestion=' # -> '$short
+		fi
+
+
+		# if [[ "${ans#$PWD/}" =~ "^$query.*" ]]; then
+		# 	suggestion="z ${ans#$PWD/} # ✔"
+		# elif [[ "$ans" =~ "^$query.*" ]]; then
+		# 	suggestion="z $ans # ✔"
+		# else
+		# 	suggestion=' # -> '${$(print -D $ans)#$(print -D $PWD)/#./}
+		# fi
+	else
+		suggestion=" # ✘"
+	fi
+}
+
+ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top)
+
+# }}}
+
+
+# keybinding for sudo plugin (I didn't like the default)
+bindkey "\e-" sudo-command-line
 
 # User configuration {{{
 setopt autocd # just type dir name to cd into it
@@ -133,6 +208,7 @@ select-word-style bash
 
 # set environment variables {{{
 export BAT_PAGER='less -RFS'
+export LESS='-RF --mouse --wheel-lines=5'
 TIMEFMT='%J  %*U user %*S system %P cpu %*E total' # millisecond precision in time
 export LANG=en_US.UTF-8
 REPORTTIME=10
@@ -164,6 +240,12 @@ function mkcd() {
 	fi
 	mkdir -p $1
 	cd $1
+}
+
+# make `cd <filename>` take me to the directory of that file
+cd() {
+  [[ ! -e $argv[-1] ]] || [[ -d $argv[-1] ]] || argv[-1]=${argv[-1]%/*}
+  builtin cd "$@"
 }
 
 function o() {
@@ -200,8 +282,7 @@ function sudo() {
 #}}}
 
 compdef vi=nvim # define completions for vi command
-zstyle ':completion:*:*:vi:*' file-patterns '^*.(aux|log|pdf|fls|fdb_latexmk|toc|synctex.gz):source-files' '*:all-files' # make vim ignore .aux files etc.
-zstyle ':completion:*:*:cp:*' file-patterns '^*.(aux|log|pdf|fls|fdb_latexmk|toc|synctex.gz):source-files' '*:all-files' # make vim ignore .aux files etc.
+zstyle ':completion:*:*:vi:*' file-patterns '^*.(aux|log|pdf|fls|fdb_latexmk|toc|synctex.gz|out|bbl|blg|bak):source-files' '*:all-files' # make vim ignore .aux files etc.
 
 # show available tmux sessions + reminder when using ssh {{{
 if [ -z "$TMUX" ] && [ "$0" = "-zsh" ]; then
@@ -234,10 +315,10 @@ bindkey "\e[1;3C" forward-char
 bindkey "\e[1;3D" backward-char
 bindkey "\e;" forward-char
 
-noop () { }
-zle -N noop
-bindkey "\e" noop
-KEYTIMEOUT=5
+# noop () { }
+# zle -N noop
+# bindkey "\e" noop
+# KEYTIMEOUT=5
 
 autoload -U select-word-style
 backward-kill-WORD () {
@@ -260,7 +341,7 @@ bindkey '\eOP' home_dir
 bindkey '\e[2~' home_dir
 
 # Alt + M toggles mouse
-bindkey "\em" zle-mouse-toggle # Alt + m to toggle mouse
+# bindkey "\em" zle-mouse-toggle # Alt + m to toggle mouse
 # }}}
 
 # print timestamp on the right of executed commands {{{
@@ -343,9 +424,6 @@ function man() {
 }
 
 # !! keep zsh-syntax-hightliting at end of .zshrc !!
-
-# syntax highlighting (this probably should be managed via oh-my-zsh...)
-source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # for profiling zsh startup
 if [[ "$PROFILE_STARTUP" == true ]]; then

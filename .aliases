@@ -8,5 +8,11 @@ alias dfh='df -h'
 alias euro="echo 'CurrencyConvert[Quantity[1, \"Euros\"], \"USDollars\"]' | math | grep -oP '\d+(\.\d+)?(?= US dollars)' | xargs printf '$%.3f\n'"
 alias :q=exit
 alias sl='sl -e'
-alias hg='kitty +kitten hyperlinked_grep'
+alias rg='rg --no-ignore-parent'
+alias hg='kitty +kitten hyperlinked_grep --no-ignore-parent'
 alias _hg='_rg'
+alias fd='fd --no-ignore-parent'
+alias cal='ncal -b'
+alias fusuma-restart='killall -HUP fusuma; pgrep fusuma || nice -n -11 fusuma -d'
+alias fusuma-config='vi -p ~/.config/fusuma/config.yml ~/.config/libinput-gestures.conf /usr/include/linux/input-event-codes.h'
+alias upgrade='sudo apt update && sudo apt upgrade && sudo cp /usr/share/applications/nvim.desktop.bak /usr/share/applications/nvim.desktop'

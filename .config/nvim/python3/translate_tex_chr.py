@@ -1,12 +1,12 @@
 #!/usr/bin/python3
-import re
+import re, vim
 
 def read_dict(file):
     with open(file) as f:
         for line in f:
             if not line[:-1] or line.startswith('#'): continue
             char, tex = line[:-1].split(' ')
-            chr_to_tex[ord(char)] = '\\' + tex
+            chr_to_tex[char] = '\\' + tex
             # HAS_BAR |= (tex == '|')
 
 def tr_write(s):
@@ -14,30 +14,32 @@ def tr_write(s):
     last_pos = 0
     for match in re.finditer(cmp, s):
         new.append(s[last_pos : match.start()])
-        new.append(chr_to_tex[ord(match.group(0))])
+        new.append(chr_to_tex[match.group(0)])
         last_pos = match.end()
     new.append(s[last_pos :])
     return ''.join(new)
 
-chr_to_tex = {}
-read_dict('/home/ca/latex_tools/translate.csv')
+# chr_to_tex = {}
+# read_dict('/home/ca/latex_tools/translate.csv')
+tex_to_chr = vim.lua.require('tr_tex_chr')
+chr_to_tex = {char: '\\' + cmd for cmd, char in tex_to_chr.items()}
 cmp = re.compile(
         '(' +
-        '|'.join(chr(c) + '(?![a-zA-Z])'*v.isalpha() for c, v in chr_to_tex.items())
+        # '|'.join(chr(c) + '(?![a-zA-Z])'*v.isalpha() for c, v in chr_to_tex.items())
+        '|'.join(c + '(?![a-zA-Z])'*cmd.isalpha() for c, cmd in chr_to_tex.items())
         + ')'
 )
 
 backup_buffer = []
 
-def tr_change_buffer(fmt=None):
-    import vim
-    fmt = fmt or vim.eval('&fileformat')
-    if fmt == 'unix':
-        end = '\n'
-    elif fmt == 'dos':
-        end = '\r\n'
-    else:
-        end = '\r'
+def tr_change_buffer():
+    # fmt = fmt or vim.eval('&fileformat')
+    # if fmt == 'unix':
+    #     end = '\n'
+    # elif fmt == 'dos':
+    #     end = '\r\n'
+    # else:
+    #     end = '\r'
 
     global backup_buffer
     backup_buffer = vim.api.buf_get_lines(0, 0, -1, 1)

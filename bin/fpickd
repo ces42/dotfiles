@@ -1,0 +1,159 @@
+#!/bin/env bash
+SHORTENS=('Books' 'Uni' 'BooksMath' 'papers')
+for d in ${SHORTENS[@]}; do
+	SED_CORE=${SED_CORE:+$SED_CORE'\|'}$d
+done
+SED="s#^Documents/\($SED_CORE\)/#~\1/#"
+SEDBACK="s#^~\($SED_CORE\)/#Documents/\1/#"
+
+DIRS=(.config/{nvim,fusuma} .oh-my-zsh */)
+
+PATH="$PATH:$HOME/.fzf/bin"
+tput smkx
+IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.toc,*.out,*.fdb_latexmk,*.synctex.gz}')
+
+PIPE="/var/run/user/$(id -u)/fpickd_input"
+if [ ! -e $PIPE ]; then
+	mkfifo $PIPE
+fi
+
+NAME=$1
+WID=$(xdotool search --classname $NAME)
+# echo WID: $WID
+xdotool windowunmap $WID
+xprop -f _MOTIF_WM_HINTS 32c -set _MOTIF_WM_HINTS "0x2, 0x0, 0x0, 0x0, 0x0" -id $WID
+
+# detach() {
+# 	nohup $* </dev/null 1>/dev/null 2>&1 &
+# }
+set -m
+
+# main loop
+while true; do
+input=$(cat $PIPE)
+
+xdotool windowmap $WID
+# xdotool windowfocus $WID
+# sleep 2
+
+# create a background process that focuses the window if anything touches $PIPE
+{
+	# trap 'kill -- -$$; exit' SIGINT
+	while true; do
+		cat $PIPE > /dev/null
+		xdotool windowraise $WID
+	done
+}&
+
+# find_cmd="fd -L ${IGNORES[@]} . ${DIRS[@]}"
+# the following works in zsh but (qq) is not a thing in bash
+# find_cmd=$(echo "fd -L ${(qq)IGNORES[@]} . ${(qq)DIRS[@]}")
+# instead we need to use ${variable@Q} it seems
+find_cmd=$(echo "fd -L ${IGNORES[@]@Q} . ${DIRS[@]@Q}")
+echo find command: $find_cmd
+
+exec 3>&1 # 3 is another stdout
+
+echo starting fd and fzf
+
+out=$(
+# fd -L "${IGNORES[@]}" . "${DIRS[@]}" | sed $SED | fzf \
+eval $find_cmd | sed $SED | fzf \
+		--multi \
+		--reverse \
+		--info inline \
+		--tiebreak=length \
+		--scheme=path \
+		--preview 'f=$(echo {} | sed "'$SEDBACK'"); ls -lah --color=always $f && { [[ $(file --mime $f | awk -F";" "{print $1}") =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ binary ]] && echo binary file } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
+		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i)" \
+		--bind "ctrl-c:execute-silent(echo -n {} | xclip -i -selection clipboard)" \
+		--bind "ctrl-alt-n:page-down,ctrl-alt-p:page-up" \
+		--bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
+		--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "write! $tmp" >&3; mv -n {} "$(cat $tmp)")+'"reload($find_cmd)" \
+		--bind "alt-d:change-prompt(D> )+reload($find_cmd --type d)" \
+		--bind "alt-f:change-prompt(F> )+reload($find_cmd --type f )"\
+		--bind "alt-h:change-prompt(H> )+reload($find_cmd -H -E '.cache' -E '.cargo' -E '.dotfiles' -E '**/drive_c' -E '**/dosdevices')"\
+		--bind "f5:reload($find_cmd)" \
+		--preview-window "right:50%:border-left:hidden" \
+		--color=fg:#ffffff,hl:#00a000 \
+		--color=fg+:#ffff20,bg+:#262626,hl+:#20ff20 \
+		--color=info:#afaf87,prompt:#07cdff \
+		--color=marker:#87ff00,spinner:#af5fff,header:#87afaf \
+		--expect=ctrl-o,alt-enter,ctrl-] \
+		--query "$input"
+	)
+kill -INT %%
+xdotool windowunmap $WID
+
+IFS=''
+echo $(echo $out | awk -F "\n" "{print $1}")
+out=$(echo $out | sed $SEDBACK)
+mode=$(echo $out | head -n 1)
+files=$(echo $out | tail -n +2)
+echo mode: $mode
+echo files: "$files"
+
+if [[ $mode == "ctrl-o" ]]; then
+	while IFS= read -r f ; do
+		if [ -d "$f" ]; then
+			# xdg-open "$f" 1>/dev/null 2>/dev/null & disown
+			detach xdg-open "$f"
+		elif [[ "$(file --mime "$f")" =~ application/pdf ]]; then
+			detach okular "$f"
+		fi
+	done <<< "$files"
+elif [[ $mode == "alt-enter" ]]; then
+	# for f in "$files"; do
+	while IFS= read -r f ; do
+		open=$(dmenu_path | dmenu)
+		#echo "$open $f"
+	    # $open $f 1>/dev/null 2>/dev/null & disown
+		detach $open $f
+	done <<< "$files"
+elif [[ $mode == "ctrl-]" ]]; then
+	# for f in "$files"; do
+	while IFS= read -r f ; do
+		eval "$(xdotool getmouselocation --shell)"
+		detach dragon --and-exit "$f"
+		while true; do
+			xid="$(xdotool search --onlyvisible --class  dragon | head -n 2)"
+			test -z "$xid" || break
+			sleep 0.05
+		done
+		xdotool windowmove $xid 100 100
+		xdotool mousemove --sync -w "$xid" 1 1 mousedown 1 mousemove $X $Y
+	done <<< "$files"
+else
+	#for_vim=""
+	# for f in "$files"; do
+	while IFS= read -r f ; do
+		#if [[ "$f" =~ .*\.(txt|md|log|py|tex|cpp|c|h|xml|html|sh|zsh|bib) ]]; then
+		#	for_vim="$for_vim $f"
+		#	continue
+		#fi
+		# echo 'file: '$f
+		if [ -d "$f" ]; then
+ 			detach kitty-tab "~/$f"
+		else
+			detach xdg-open "$f"
+		fi
+	done <<< "$files"
+	#if [ -n "$for_vim" ]; then
+	#	eval detach kitty -e "vi -p $for_vim"
+	#fi
+fi
+
+# xdotool windowmap $WID &
+# sleep 10;
+
+# kill -9 %%
+# pkill -INT -P $$
+# kill -INT %%
+if [ -n "$(jobs)" ]; then
+	notify-send.sh -f -t 800 'fpickd: background jobs still running' "$(jobs)"
+	sleep 1
+	# pkill -P $$
+fi
+
+done
+

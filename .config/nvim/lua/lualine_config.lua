@@ -47,11 +47,10 @@ end
 
 -- https://github.com/nvim-lualine/lualine.nvim/issues/186#issuecomment-968392445 {{{
 local function search_cnt()
-  local res = vim.fn.searchcount()
-  
+  local res = vim.fn.searchcount({maxcount = 0, timeout = 50})
   if res.total > 0 then
       local s = vim.fn.getreg("/")
-      disp = ''
+      local disp = ''
       if string.len(s) <= 12 then
           disp = s
       else
@@ -64,7 +63,7 @@ local function search_cnt()
                         ),
                            '%%', '%%%%'
                )
-  else 
+  else
       return ""
   end
 end

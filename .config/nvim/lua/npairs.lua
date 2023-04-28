@@ -58,7 +58,7 @@ local tex_bracket = function(...)
     --local checker = cond.not_after_regex('[%W}=&]')
     rule:with_pair(
         function(opts)
-            str = utils.text_sub_char(opts.line, opts.col, 2)
+            local str = utils.text_sub_char(opts.line, opts.col, 2)
             if (str ~= '') and not str:match('^[%s{})%]=+;,.^_&$"\']') and not str:match('\\}') then
                 return false
             end
@@ -173,15 +173,18 @@ npairs.add_rules({
         :with_pair(cond.none())
         :with_move(function(opts) return opts.char == '}' end)
         :with_cr(cond.none())
-:with_del(cond.none())
+        :with_del(cond.none())
         :use_key('}'),
     Rule('', ' \\right)', {"tex", "latex"})
         :with_pair(cond.none())
         :with_move(function(opts) if opts.char ~= ')' then return false end end)
         :with_move(function(opts) return is_brackets_balanced_around_position(opts.line, '(', ')', opts.col) end )
-:with_cr(cond.none())
+        :with_cr(cond.none())
         :with_del(cond.none())
         :use_key(')'),
+    tex_bracket('⟨', '⟩', {"tex", "latex"})
+        :with_pair(function(opts) if vim.call('vimtex#syntax#in_mathzone') ~= 1 then return false end end)
+        :with_move(function(opts) return opts.char == '}' end),
 }
 )
 
@@ -191,14 +194,14 @@ npairs.add_rules {
     Rule(' ', ' ')
         :with_pair(function(opts)
             local pair = opts.line:sub(opts.col -1, opts.col)
-            return vim.tbl_contains({ '()', '{}', '[]' }, pair)
+            return vim.tbl_contains({ '()', '{}', '[]', '⟨⟩'}, pair)
         end)
         :with_move(cond.none())
         :with_cr(cond.none())
         :with_del(function(opts)
             local col = vim.api.nvim_win_get_cursor(0)[2]
             local context = opts.line:sub(col - 1, col + 2)
-            return vim.tbl_contains({ '(  )', '{  }', '[  ]' }, context)
+            return vim.tbl_contains({ '(  )', '{  }', '[  ]', '⟨  ⟩' }, context)
         end),
     Rule('', ' )')
         :with_pair(cond.none())

@@ -4,6 +4,9 @@ let g:python3_host_prog = expand('/usr/bin/python3')
 set tabstop=4
 set shiftwidth=4
 
+let mapleader=' '
+let maplocalleader=' '
+
 set termguicolors
 " ~/.config/nvim/lua/init.lua
 lua require('init')
@@ -35,8 +38,6 @@ let g:AutoPairsShortcutBackInsert='<M-v>'
 "map ?  <Plug>(incsearch-backward)
 "map g/ <Plug>(incsearch-stay)
 
-" easymotion
-map <leader> <Plug>(easymotion-prefix)
 
 " filetype plugin indent on " already done by plug#end()
 " syntax on " already done by plug#end()
@@ -45,7 +46,6 @@ color PaperColor
 " colorscheme catppuccin-mocha
 
 "lua require('texlab')
-"lua require('matchparen').setup()
 "lua require('tabout').setup{
 "            \    tabkey = '<C-j>',
 "            \    backwards_tabkey = '<C-;>',
@@ -115,27 +115,6 @@ endif
 " targets.vim {{{
 "let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB'
 " }}}
-
-" enable Alt+Key combinations .... {{{
-" ...in 7-bit terminal (apparently everything except xterm)
-" https://stackoverflow.com/questions/6778961/alt-key-shortcuts-not-working-on-gnome-terminal-with-vim/10216459#10216459
-"let c='a'
-"while c <= 'z'
-"" exec "set <A-".c.">=\e".c
-"exec "imap \e".c." <A-".c.">"
-"let c = nr2char(1+char2nr(c))
-"endw
-
-"" fixes the above when using airline
-"" https://www.reddit.com/r/neovim/comments/35h1g1/neovim_slow_to_respond_after_esc/
-"if ! has('gui_running')
-"augroup FastEscape
-    "autocmd!
-    "au InsertEnter * set timeoutlen=100
-    "au InsertLeave * set timeoutlen=1000
-"augroup END
-"endif
-"" }}}
 
 " set options {{{
 set history=10000
@@ -223,6 +202,9 @@ imap <S-Tab> <C-\><C-o><<
 " }}}
 
 " key bindings {{{
+" easymotion
+map <leader> <Plug>(easymotion-prefix)
+
 " prevent Ctrl+U from deleting work https://vim.fandom.com/wiki/Recover_from_accidental_Ctrl-U
 inoremap <c-u> <c-g>u<c-u>
 inoremap <c-w> <c-g>u<c-w>
@@ -232,6 +214,8 @@ inoremap <C-R> <C-G>u<C-R>
 inoremap <C-R><C-R> <C-R>"
 inoremap <C-R><C-T> <C-R>*
 inoremap <C-R><C-E> <C-R>+
+" ctrl+L in insert mode to correct last spelling mistake
+inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
 " press '\h' to highlight search results
 map <leader>h :set hlsearch!<cr>
 " press '\l' to show line Numbers, '\rl' to show relative line numbers
@@ -242,17 +226,17 @@ map <leader>8 :set colorcolumn=80<cr>
 map <leader>9 :set colorcolumn=90<cr>
 map <leader>0 :set colorcolumn=100<cr>
 map <leader>1 :set colorcolumn=<cr>
-" press '\f' to show foldcolumn
-function! ToggleFoldcolumn()
-    if &foldcolumn
-        let &l:foldcolumn = 0
-    else
-        let &l:foldcolumn = 2
-    endif
-endfunction
 " press '\m' to enable folding by markers
 map <leader>m :set foldmethod=marker<CR>
-"nnoremap <expr> <leader>f ToggleFoldcolumn()
+" press '\f' to show foldcolumn
+" function! ToggleFoldcolumn()
+"     if &foldcolumn
+"         let &l:foldcolumn = 0
+"     else
+"         let &l:foldcolumn = 2
+"     endif
+" endfunction
+" nnoremap <expr> <leader>f ToggleFoldcolumn()
 " press or Alt+g to capitalize the current word
 nnoremap <M-g> lm`b~``h
 inoremap <M-g> <Right><C-\><C-o>m`<C-o>b<C-o>~<C-\><C-o>``<Left>
@@ -307,7 +291,7 @@ cnoremap <M-n> <Down>
 cnoremap <C-.> %:h
 " Spacebar inserts space in normal mode too
 "nnoremap <Space> i <Esc>l
-nmap <space> i<space><esc>l
+" nmap <space> i<space><esc>l
 "split navigations
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
@@ -320,11 +304,11 @@ xnoremap g/ "zy/<C-R>z<CR>
 " gy to copy the whole buffer into the Ctrl+C clipboard
 nnoremap gy gg"+yG``
 
-" C-T to open Telescope file picker in normal mode
-nnoremap <C-T> <cmd>Telescope find_files<CR>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+" " C-T to open Telescope file picker in normal mode
+" nnoremap <C-T> <cmd>Telescope find_files<CR>
+" nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+" nnoremap <leader>fb <cmd>Telescope buffers<cr>
+" nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Don't clutter unnamed register with one-character deletes
 "nnoremap x "-x "disable this because I *do* like doing xp
@@ -351,6 +335,9 @@ nmap gcy m`yyPgcc``
 
 " gV to visually select current "line" w.r.t line wrap
 nnoremap gV g^vg$
+
+" gp to select previously pasted text
+nnoremap <expr> gp '`[' . getregtype()[0] . '`]'
 
 " go and gO to insert *indented* line above/below w/o leaving normal mode
 nnoremap go o.<BS><ESC>
@@ -388,6 +375,12 @@ nmap gss yss
 nmap ß ys
 nmap ßß yss
 
+" AltGr + : for lua command mode
+nnoremap ¶ :lua 
+
+" QQ to leave vim
+nnoremap QQ :qa<enter>
+
 " }}}
 
 
@@ -413,9 +406,6 @@ command! GP Git push
 
 command! Rc tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
 command! RC tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
-
-" QQ to leave vim
-nnoremap QQ :qa<enter>
 
 command! -nargs=? RichPaste call RichPaste('<args>')
 command! -nargs=? RP call RichPaste('<args>')

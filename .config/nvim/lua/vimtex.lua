@@ -1,5 +1,5 @@
 -- redefine the greek letter imaps to use ensure_math
-local use_unicode = vim.b.translate_tex_unicode
+-- local use_unicode = vim.b.translate_tex_unicode
 local s = {}
 
 local shortcuts = {
@@ -17,7 +17,7 @@ local shortcuts = {
     m = 'μ',
     n = 'ν',
     p = 'π',
-    q = 'θ', 
+    q = 'θ',
     r = 'ρ',
     s = 'σ',
     t = 'τ',
@@ -61,7 +61,7 @@ local shortcuts = {
 }
 
 function s.imaps_setup()
-    imaps = vim.api.nvim_get_var('vimtex_imaps_list')
+    local imaps = vim.api.nvim_get_var('vimtex_imaps_list')
     if vim.b.translate_tex_unicode then
         vim.bo.iminsert = 1
     else
@@ -77,11 +77,11 @@ function s.imaps_setup()
 
     for k, v in pairs(shortcuts) do
         if (k:match("%a") or k == 'vl') and k ~= 'o' and k ~= 'O' then
-            vim.api.nvim_buf_set_keymap(0, 'l', ';' .. k, 'Ensure_math(";' .. k .. '", "' .. v ..'")', {noremap = true, silent = true, nowait = true, expr = true})
+            vim.api.nvim_buf_set_keymap(0, 'l', ';' .. k, 'Ensure_math(";' .. k .. '", "' .. v ..'")', {noremap = true, nowait = true, expr = true})
             --vim.api.nvim_buf_set_keymap(0, 'l', ';' .. k, v, {noremap = true, silent = true, nowait = true})
         else
-            lhs = vim.fn.escape(';' .. k, '\\')
-            vim.api.nvim_buf_set_keymap(0, 'l', ';' .. k, 'In_math("' .. lhs .. '", "' .. v ..'")', {noremap = true, silent = true, nowait = true, expr = true})
+            local lhs = vim.fn.escape(';' .. k, '\\')
+            vim.api.nvim_buf_set_keymap(0, 'l', ';' .. k, 'In_math("' .. lhs .. '", "' .. v ..'")', {noremap = true, nowait = true, expr = true})
         end
         --vim.fn['vimtex#imaps#add_map']({lhs = k, rhs = v, wrapper = 'Ensure_math'})
     end

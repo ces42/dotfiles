@@ -6,7 +6,7 @@ function! TexSetupBuffer()
     setlocal spell
     set spelllang=en_us
     " ctrl+L in insert mode to correct last spelling mistake
-    inoremap <buffer> <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
+    " inoremap <buffer> <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
     " ctrl+backspace deletes _<digit> in one go (to undo auto-numeric-subscript snippet)
     "inoremap <buffer> <expr> <C-H> (matchstr(getline(line('.'))[0:col('.') - 2], '_\d$') != '' && vimtex#syntax#in_mathzone()) ? '<BS><BS>' : '<C-W>'
 
@@ -23,7 +23,15 @@ function! TexSetupBuffer()
     inoremap <buffer> <expr> ² vimtex#syntax#in_mathzone() ? '^2' : '²'
     inoremap <buffer> <expr> ³ vimtex#syntax#in_mathzone() ? '^3' : '³'
     nmap <buffer> g% VaeS%
-    nmap <buffer> tsa ts$csealign<CR>g%vie:s/\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/<CR>
+    function! Tsa()
+        norm ts$
+        call vimtex#env#change_surrounding('math', 'align')
+        norm g%
+        " norm vie
+        " substitue /\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/
+    endfunction
+    " nmap <buffer> tsa ts$csealign<CR>g%vie:s/\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/<CR>
+    nmap <buffer> tsa :call Tsa()<CR>
     "nnoremap <buffer> ci= F=lct=  <left>
     "nnoremap <buffer> ci+ F+lct+  <left>
 

@@ -4,125 +4,145 @@
 swipe:
     3:
         begin:
-          command: echo three_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
+          # command: echo three_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
+          server: three_finger_begin
           interval: 0.1
         end:
-          command: echo three_finger_end > /var/run/user/$(id -u)/fusuma_fifo
+          # command: echo three_finger_end > /var/run/user/$(id -u)/fusuma_fifo
+          server: three_finger_end
         left:
           update:
             #sendkey: "LEFTCTRL+NEXT"
             # command: xte 'keydown Control_L' 'key Next' 'keyup Control_L'
-            command: echo three_finger_left > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo three_finger_left > /var/run/user/$(id -u)/fusuma_fifo
+            server: three_finger_left
             threshold: 0.5
             interval: 1.7
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
             # command: xte 'keydown Control_L' 'key Prior' 'keyup Control_L'
-            command: echo three_finger_right > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo three_finger_right > /var/run/user/$(id -u)/fusuma_fifo
+            server: three_finger_right
             threshold: 0.5
             interval: 1.7
         up:
-            command: echo three_finger_up > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo three_finger_up > /var/run/user/$(id -u)/fusuma_fifo
+            server: three_finger_up
             threshold: 0.7
             # interval: 2.0
         down:
-            command: echo three_finger_down > /var/run/user/$(id -u)/fusuma_fifo
-            threshold: 0.6
+            # command: echo three_finger_down > /var/run/user/$(id -u)/fusuma_fifo
+            server: three_finger_down
+            threshold: 0.55
             #interval: 3.1
     4:
         begin:
-            command: echo four_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo four_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_begin
             interval: 0.1
         end:
-            command: echo four_finger_end > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo four_finger_end > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_end
         left:
-            command: echo four_finger_left > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo four_finger_left > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_left
             threshold: 0.02
             interval: 0.6
         right:
-            command: echo four_finger_right > /var/run/user/$(id -u)/fusuma_fifo
+            # command: echo four_finger_right > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_right
             threshold: 0.02
             interval: 0.6
         down:
             # command: xte 'keydown Super_L' 'key Prior' 'keyup Super_L'
-            command: echo four_finger_down > /var/run/user/$(id -u)/fusuma_fifo
-            threshold: 0.7
+            # command: echo four_finger_down > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_down
+            # not working :(
+            # keypress:
+            #   RIGHTSHIFT:
+            #     server: four_finger_down shift
+            #   LEFTSHIFT:
+            #     server: four_finger_down shift
+            threshold: 0.5
         up:
             # command: xte 'keydown Super_L' 'key Next' 'keyup Super_L'
-            command: echo four_finger_up > /var/run/user/$(id -u)/fusuma_fifo
-            threshold: 0.7
+            # command: echo four_finger_up > /var/run/user/$(id -u)/fusuma_fifo
+            server: four_finger_up
+            # not working :(
+            # keypress:
+            #   RIGHTSHIFT:
+            #     server: four_finger_up shift
+            #   LEFTSHIFT:
+            #     server: four_finger_up shift
+            threshold: 0.5
 pinch:
     2:
         out:
             # command: notify-send.sh "pinch in" -f -t 500
-            command: window=$(xdotool getactivewindow); state=$(xprop -id $window | grep "^_NET_WM_STATE(ATOM) ="); if [ -n "$(echo $state | grep _NET_WM_STATE_FULLSCREEN)" ]; then case $(xprop -id $window WM_CLASS | cut -d "\"" -f 4) in vlc) ydotool key --key-delay 0 33:1 33:0 ;; xournalpp) ydotool key --key-delay 0 87:1 87:0 ;; kitty) ydotool key --key-delay 0 29:1 42:1 87:1 87:0 42:0 29:0 ;; *) wmctrl -r ":ACTIVE:" -b remove,fullscreen ;; esac else wmctrl -r ":ACTIVE:" -b remove,maximized_vert,maximized_horz; fi
-            threshold: 0.7
+            server: pinch_two_out
+            threshold: 0.8
         in:
-          command: |-
-            window=$(xdotool getactivewindow)
-            state=$(xprop -id $window | grep "^_NET_WM_STATE(ATOM) =")
-            if [ -n "$(echo $state | grep "_NET_WM_STATE_FULLSCREEN")" ]; then
-                :
-            elif [ -n "$(echo $state | grep "_NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT" | grep -v "_NET_WM_STATE_FULLSCREEN")" ]; then
-                case $(xprop -id $window WM_CLASS | cut -d "\"" -f 4) in
-                    vlc)
-                        ydotool key --key-delay 0 33:1 33:0
-                        ;;
-                    xournalpp)
-                        ydotool key --key-delay 0 87:1 87:0
-                        ;;
-                    firefox)
-                        if [ -n "$(xprop -id $window WM_NAME | grep -iP "fmovies|youtube|tagesschau|prime video")" ]; then
-                            ydotool key --key-delay 0 33:1 33:0
-                        else
-                            ydotool key --key-delay 0 87:1 87:0
-                        fi
-                        ;;
-                    kitty)
-                        ydotool key --key-delay 0 29:1 42:1 87:1 87:0 42:0 29:0
-                        ;;
-                    Evince)
-                        ydotool key --key-delay 0 17:1 17:0
-                        ;;
-                    *)
-                        wmctrl -r ":ACTIVE:" -b add,fullscreen
-                        ;;
-                esac
-            else
-                wmctrl -r ":ACTIVE:" -b add,maximized_vert,maximized_horz
-            fi
-          # command: window=$(xdotool getactivewindow); state=$(xprop -id $window | grep "^_NET_WM_STATE(ATOM) ="); if [ -n "$(echo $state | grep "_NET_WM_STATE_FULLSCREEN")" ]; then :; elif [ -n "$(echo $state | grep "_NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT" | grep -v "_NET_WM_STATE_FULLSCREEN")" ]; then case $(xprop -id $window WM_CLASS | cut -d "\"" -f 4) in vlc) ydotool key --key-delay 0 33:1 33:0 ;; xournalpp) ydotool key --key-delay 0 87:1 87:0 ;; firefox) if [ -n "$(xprop -id $window WM_NAME | grep -iP "fmovies|youtube|tagesschau|prime video")" ]; then ydotool key --key-delay 0 33:1 33:0; else ydotool key --key-delay 0 87:1 87:0; fi ;; kitty) ydotool key --key-delay 0 29:1 42:1 87:1 87:0 42:0 29:0 ;; *) wmctrl -r ":ACTIVE:" -b add,fullscreen ;; esac else wmctrl -r ":ACTIVE:" -b add,maximized_vert,maximized_horz; fi
-          threshold: 0.7
+            server: pinch_two_in
+            threshold: 0.8
     3:
         in:
-            command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in kitty|Tilix) ydotool key --key-delay 0 56:1 1:1 1:0 56:0 ;; *) ydotool key --key-delay 0 125:1 5:1 5:0 125:0 ;; esac
+            # command: case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in kitty|Tilix) ydotool key --key-delay 0 56:1 1:1 1:0 56:0 ;; *) ydotool key --key-delay 0 125:1 5:1 5:0 125:0 ;; esac
+            server: pinch_three_in
             threshold: 0.8
         out:
-            command: ydotool key --key-delay 0 125:1 125:0
+            server: pinch_three_out
             threshold: 0.8
     4:
         in:
             # command: ydotool key --key-delay 0 56:1 42:1 1:1 1:0 42:0 56:0
-            command: ydotool key --key-delay 0 56:1 106:1 106:0 56:0
+            # command: ydotool key --key-delay 0 56:1 106:1 106:0 56:0
+            server: pinch_four_in
             threshold: 0.9
         out:
             # command: ydotool key --key-delay 0 56:1 1:1 1:0 56:0
-            command: ydotool key --key-delay 0 56:1 105:1 105:0 56:0
+            # command: ydotool key --key-delay 0 56:1 105:1 105:0 56:0
+            server: pinch_four_out
             threshold: 0.9
+
+tap:
+    4:
+      # command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
+      server: four_finger_hold
+      threshold: 0.35
+
 
 hold:
     4:
-      command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
-      threshold: 0.8
+      # command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
+      server: four_finger_hold
+      threshold: 0.45
 
-
-inputs:
-    libinput_command_input:
-        enable-tap: true
-        verbose: true
 plugin:
-  filters:
-    libinput_device_filter:
-      keep_device_names:
-        - "SYNA32A2:00 06CB:CE17 Touchpad"
+  inputs:
+    libinput_command_input:
+      # show-keycodes: true
+      device: /dev/input/by-path/pci-0000:00:15.0-platform-i2c_designware.0-event-mouse
+      enable-tap: true
+      verbose: true
+  executors:
+    server_executor:
+      pipe: /var/run/user/1000/fusuma_fifo
+  # filters:
+  #   libinput_device_filter:
+  #     keep_device_names:
+  #       - "SYNA32A2:00 06CB:CE17 Touchpad"
+
+# some experiment:
+# it seems like these are executed *in addition* to the 'server' commands
+# ---
+# context:
+#   application: kitty
+# swipe:
+#   3:
+#     left:
+#       # command: notify-send.sh -t 1000 -f 'kitty left'
+#       server: three_finger_left
+#     right:
+#       server: three_finger_left
+

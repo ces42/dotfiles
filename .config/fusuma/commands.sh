@@ -1,63 +1,108 @@
 #!/bin/sh
+# look at /usr/include/linux/input-event-codes.h to find keycodes for ydotool
+# ctrl = 29, shift = 42, alt = 56, super=125
 
-three_finger_begin() {
-	# id=$(xdotool getactivewindow)
+# reads: none
+# sets: old_win, active_win_id, active_win_class
+switch_to_cursor_win() {
+	_get_cursor_win
+	_do_focusing
+}
+
+mkfifo /run/user/1000/old_win
+mkfifo /run/user/1000/active_win_id
+mkfifo /run/user/1000/active_win_class
+
+_get_cursor_win_fast() { # WIP
+	xprop -id $(xdotool getactivewindow | tee /run/user/1000/active_win_id) WM_CLASS | cut -d \" -f 4 > /run/user/1000/active_win_class &
+	xdotool getmouselocation --shell | sed -n 's/WI....=\(.*\)/\1/p' > /run/user/1000/old_win &
+	active_win_id=$(cat /run/user/1000/active_win_id)
+	active_win_class=$(cat /run/user/1000/active_win_class)
+	old_win=$(cat /run/user/1000/old_win)
+}
+
+_get_cursor_win() {
 	old_win=$(xdotool getactivewindow)
-	id=$(xdotool getmouselocation --shell | grep WINDOW | sed 's/.*=\(.*\)/\1/')
-	if [ $old_win != $id ]; then
-		# wmctrl -iR "$id"
-		xdotool windowfocus "$id"
-		# echo $old_win > "/var/run/user/$(id -u)/fusuma-old-win"
+	# if active window is guake don't care about cursor position
+	if echo $guake | grep -w "$old_win"; then
+		active_win_id=$old_win
 	else
-		# echo 'SAME' > "/var/run/user/$(id -u)/fusuma-old-win"
+		active_win_id=$(xdotool getmouselocation --shell | sed -n 's/WI....=\(.*\)/\1/p')
+	fi
+	echo "switch to: old_win=$old_win"
+	echo "switch to: active_win_id=$active_win_id"
+	active_win_class=$(xprop -id $active_win_id WM_CLASS | cut -d \" -f 4)
+}
+
+_do_focusing() {
+	if [ "$old_win" != "$active_win_id" ]; then
+		# check to not refocus if the mouse is over GNOME shell
+		if [ $active_win_id -gt 0 ]; then
+			# wmctrl -iR "$active_win_id"
+			echo 'switching focus'
+			xdotool windowfocus "$active_win_id"
+		else
+			active_win_id=$old_win
+			old_win='SAME'
+		fi
+	else
 		old_win='SAME'
 	fi
-	wname=$(xprop -id $id WM_CLASS | cut -d \" -f 4 | tee "/var/run/user/$(id -u)/fusuma-3finger")
-	# logger 'fusuma: window='$wname
-	echo "\n\nwname=$wname\n\n"
-	if [ "$wname" = 'Evince' ]; then
+}
+
+# reads: old_win
+# sets: old_win, active_win_id
+switch_win_back() {
+	if [ "$old_win" = 'NO_ACTION' ]; then
+		echo swich_win_back: do nothing
+	elif [ "$old_win" != 'SAME' ]; then
+		if [ "$raise" = "do" ]; then
+			echo switch_win_back: raise + focus
+			xdotool windowfocus "$old_win"
+			xdotool windowraise "$old_win"
+			active_win_id=$old_win
+			raise=
+		else
+			echo switch_win_back: focus
+			xdotool windowfocus "$old_win"
+			active_win_id=$old_win
+		fi
+	fi
+	
+	# clean up variables
+	# -- IDK it's really necessary b/c _get_cursor_win always sets old_win
+	old_win=	
+}
+
+three_finger_begin() {
+	# active_win_id=$(xdotool getactivewindow)
+	switch_to_cursor_win
+	# logger 'fusuma: window='$active_win_class
+	echo "begin: active_win_class=$active_win_class"
+	# echo "begin: old_win=$old_win"
+	if [ "$active_win_class" = 'Evince' ]; then
 		# logger 'fusuma: pressing alt'
 		ydotool key --key-delay 0 56:1 # left alt
 	fi
 }
 
 three_finger_end() {
-	# file="/var/run/user/$(id -u)/fusuma-3finger"
-	# old_win=$(cat /var/run/user/$(id -u)/fusuma-old-win)
-	# echo $old_win
-	if [ "$(cat $file)" = 'Evince' ]; then
+	echo "end: old_win=$old_win"
+	if [ "$active_win_class" = 'Evince' ]; then
 		ydotool key --key-delay 0 56:0 # left alt
 		raise=do
-		# if [ "$(xprop -id $old_win WM_CLASS | cut -d \" -f 4)" = 'Evince' ]; then
-		#     # xdotool windowraise $old_win
-		# fi
 	fi
-	if [ "$old_win" != 'SAME' ]; then
-		if [ "$raise" = "do" ]; then
-			xdotool windowraise $old_win
-		else
-			xdotool windowfocus $old_win
-		fi
-	fi
-	# rm "$file"
+	switch_win_back
 	# wmctrl -iR "$(cat /var/run/user/$(id -u)/fusuma-old-win)"
-	
 }
 
 three_finger_left() {
-	file="/var/run/user/$(id -u)/fusuma-3finger"
-	# if [ $(( $(date +%s%N) - $(stat -c %.Y $file | sed 's/\.//') )) -gt 500000000 ]; then
-	#     timeout 10 inotifywait --event modify $file
-	# fi
-	NAME=$(cat "$file")
-	if [ -z "$NAME" ]; then
-		NAME=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4)
-	fi
-	case $NAME in
+	case $active_win_class in
 		Spotify)
 			# logger 'fusuma key: AudioNext'
 			# xte 'key XF86AudioNext'
-			ydotool key --key-delay 0 29:1 106:1 106:0 29:0
+			# ydotool key --key-delay 0 29:1 106:1 106:0 29:0
+			ydotool key --key-delay 0 163:1 163:0
 			;;
 		Evince)
 			# logger 'fusuma key: `'
@@ -76,19 +121,12 @@ three_finger_left() {
 
 
 three_finger_right() {
-	file="/var/run/user/$(id -u)/fusuma-3finger"
-	# if [ $(( $(date +%s%N) - $(stat -c %.Y $file | sed 's/\.//') )) -gt 500000000 ]; then
-	#     timeout 10 inotifywait --event modify $file
-	# fi
-	NAME=$(cat "$file")
-	if [ -z "$NAME" ]; then
-		NAME=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4)
-	fi
-	case $NAME in
+	case $active_win_class in
 		Spotify)
 			# logger 'fusuma key: AudioPrev'
 			# xte 'key XF86AudioPrev'
-			ydotool key --key-delay 0 29:1 105:1 105:0 29:0
+			# ydotool key --key-delay 0 29:1 105:1 105:0 29:0
+			ydotool key --key-delay 0 165:1 165:0
 			;;
 		Evince)
 			# logger 'fusuma key: shift+`'
@@ -105,23 +143,20 @@ three_finger_right() {
 }
 
 three_finger_up() {
-	file="/var/run/user/$(id -u)/fusuma-3finger"
-	if [ $(( $(date +%s%N) - $(stat -c %.Y $file | sed 's/\.//') )) -gt 500000000 ]; then
-		timeout 5 inotifywait --event modify $file
+	if [ "$hold_wm_mode" ] && [ $(( $(date +%s%N) - $hold_wm_mode )) -lt 2000000000 ]; then
+		ydotool key --key-delay 56:1 62:1 62:0 56:0 # alt + f4
+		return
 	fi
-	NAME=$(cat "$file")
-	if [ -z "$NAME" ]; then
-		NAME=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4)
-	fi
-	case $NAME in
+
+	case $active_win_class in
 		Tilix)
 			ydotool key --key-delay 0 29:1 42:1 17:1 17:0 42:0 29:0
 			;;
-		firefox|"Firefox Developer Edition"|"Tor Browser")
+		firefox|"Firefox Developer Edition"|"Tor Browser"|Chromium)
 			ydotool key --key-delay 0 29:1 62:1 62:0 29:0
 			;;
 		kitty)
-			winname=$(xprop -id $(xdotool getactivewindow) WM_NAME | cut -d '"' -f 2)
+			local winname=$(xprop -id $active_win_id WM_NAME | cut -d '"' -f 2)
 			# echo $winname
 			# if echo $winname | grep "^VI:"; then
 			#     # xte 'keydown Control_L' 'keydown Alt_L' 'key Next' 'keyup Alt_L' 'keyup Control_L' 
@@ -141,11 +176,12 @@ three_finger_up() {
 				ydotool key --key-delay 0 1:1 1:0 # esc
 				sleep 0.001
 				# ydotool key --key-delay 0 29:1 24:1 24:0 29:0
-				ydotool type --key-delay 1 ':q'
-				sleep 0.001
-				ydotool key --key-delay 0 28:1 28:0
+				# ydotool type --key-delay 1 ':q'
+				# sleep 0.001
+				# ydotool key --key-delay 0 28:1 28:0
+				ydotool key --key-delay 0 42:1 44:1 44:0 16:1 16:0 42:0 # shift + ZQ
 				;;
-			  htop|"man "*)
+			  htop|"man "*|"run-help "*|"mpv "*)
 				ydotool type --key-delay 0 'q'
 				;;
 			  *)
@@ -154,94 +190,254 @@ three_finger_up() {
 			esac
 			;;
 		Evince)
-			if [ $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4) = 'Evince' ]; then
-				ydotool key --key-delay 0 56:0 # left alt
+			# are we still in evince (not in the window switcher)?
+			if [ "$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4)" = 'Evince' ]; then
+				ydotool key --key-delay 0 56:0 # left alt up
 			fi
 			ydotool key --key-delay 0 29:1 17:1 17:0 29:0
 			;;
 		*)
-			ydotool key --key-delay 0 29:1 17:1 17:0 29:0
+			ydotool key --key-delay 0 29:1 17:1 17:0 29:0 # ctrl + w
 			;;
 	esac
 }
 
 three_finger_down() {
-	file="/var/run/user/$(id -u)/fusuma-3finger"
-	if [ $(( $(date +%s%N) - $(stat -c %.Y $file | sed 's/\.//') )) -gt 500000000 ]; then
-		timeout 5 inotifywait --event modify $file
-	fi
-	NAME=$(cat "$file")
-	if [ -z "$NAME" ]; then
-		NAME=$(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d \" -f 4)
-	fi
-	echo "\nNAME=$NAME\n"
-	case $NAME in
+	case $active_win_class in
 		Tilix|kitty|Guake)
-			echo "key: shift\n\n"
+			echo "3finger down: key shift"
 			ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0
-			echo 'SAME' > "/var/run/user/$(id -u)/fusuma-old-win"
+			# echo 'SAME' > "/var/run/user/$(id -u)/fusuma-old-win"
 			;;
 		TeXstudio)
 			ydotool key --key-delay 0 29:1 49:1 49:0 29:0
 			;;
 		firefox|"Firefox Developer Edition"|"Tor Browser")
-			echo "key: firefox special\n\n"
-			if [ $(echo "$(date +%s.%N) - $(stat -c %.9Y /var/run/user/$(id -u)/fusuma-FF-newtab) < 0.6" | bc) -eq 1 ]; then 
+			echo "3finger down: key firefox special"
+			if [ $(echo "$(date +%s.%N) - $ff_newtab < 0.8" | bc) -eq 1 ]; then 
 				ydotool key --key-delay 0 29:1 62:1 62:0 29:0 # ctrl + w
 				ydotool key --key-delay 0 29:1 42:1 20:1 20:0 42:0 29:0 # ctrl + shift + t
-				rm "/var/run/user/$(id -u)/fusuma-FF-newtab"
+				ff_newtab=
 			else
-				touch "/var/run/user/$(id -u)/fusuma-FF-newtab"
+				ff_newtab=$(date +%s.%N)
 				ydotool key --key-delay 0 29:1 20:1 20:0 29:0
 			fi
-			echo 'SAME' > "/var/run/user/$(id -u)/fusuma-old-win"
 			;;
 		# "")
 		#     ydotool key --key-delay 0 29:1 56:1 20:1 20:0 56:0 29:0
 		#     ;;
 		*)
-			echo "key: no shift\n\n"
+			echo "3finger down: key no shift"
 			ydotool key --key-delay 0 29:1 20:1 20:0 29:0
 			;;
 	esac
+	xdotool windowraise $active_win_id
+	old_win=NO_ACTION
 }
 
 
+four_finger_hold() {
+	hold_wm_mode=$(date +%s%N)
+	notify-send.sh -f -t 1000 "fusuma server" "window manager mode"
+	switch_to_cursor_win
+}
+
 four_finger_begin() {
-	ydotool key --key-delay 0 56:1 # left alt
+	if [ ! "$hold_wm_mode" ] || [ $(( $(date +%s%N) - $hold_wm_mode )) -gt 2000000000 ]; then
+		hold_wm_mode=
+		ydotool key --key-delay 0 56:1 # left alt
+	fi
 }
 
 four_finger_end() {
-	rm "/var/run/user/$(id -u)/fusuma-4finger-switch"
 	ydotool key --key-delay 0 56:0 # left alt
+	if [ "$has_switched_wins" ]; then
+		if [ "$wm_mode_tiling" = 'left' ]; then
+			ydotool key --key-delay 0 125:1 106:1 106:0 125:0 # meta + right
+		elif [ "$wm_mode_tiling" = 'right' ]; then
+			ydotool key --key-delay 0 125:1 105:1 105:0 125:0 # meta + left
+		fi
+		has_switched_wins=
+	fi
+	if [ "$hold_wm_mode" -o "$wm_mode_tiling" ]; then
+		switch_win_back
+		hold_wm_mode=
+		wm_mode_tiling=
+	fi
+
+	# clearing variables handled in if blocks
+	# has_switched_wins=
+	# hold_wm_mode=
+	# wm_mode_tiling=
 }
 
 four_finger_left() {
-	touch "/var/run/user/$(id -u)/fusuma-4finger-switch"
-	ydotool key --key-delay 0 15:1 15:0
+	if [ $hold_wm_mode ]; then
+		ydotool key --key-delay 0 125:1 105:1 105:0 125:0 # meta + left
+		ydotool key --key-delay 0 56:1 # left alt down
+		hold_wm_mode=
+		wm_mode_tiling=left
+	else
+		has_switched_wins=1
+		ydotool key --key-delay 0 15:1 15:0
+	fi
 }
 
 four_finger_right() {
-	touch "/var/run/user/$(id -u)/fusuma-4finger-switch"
-	ydotool key --key-delay 0 42:1 15:1 15:0 42:0
+	if [ "$hold_wm_mode" ]; then
+		ydotool key --key-delay 0 56:0 # left alt up
+		ydotool key --key-delay 0 125:1 106:1 106:0 125:0 # meta + right
+		ydotool key --key-delay 0 56:1 # left alt down
+		wm_mode_tiling=right
+		hold_wm_mode=
+	else
+		has_switched_wins=1
+		ydotool key --key-delay 0 42:1 15:1 15:0 42:0
+	fi
 }
 
 four_finger_down() {
-	ydotool key --key-delay 0 56:0
-	if [ -n "$(cat "/var/run/user/$(id -u)/fusuma-4finger-hold")" ]; then
-		ydotool key --key-delay 0 125:1 35:1 35:0 125:0
-		echo -n > "/var/run/user/$(id -u)/fusuma-4finger-hold"
+	if [ $hold_wm_mode ]; then
+		# for hiding:
+		# ydotool key --key-delay 0 125:1 35:1 35:0 125:0 # meta + h
+		ydotool key --key-delay 0 125:1 42:1 104:1 104:0 42:0 125:0
+		# hold_wm_mode=
 	else
-		ydotool key --key-delay 0 125:1 104:1 104:0 125:0
+		if [ "$1" = 'shift' ]; then
+			echo shift
+		else
+			ydotool key --key-delay 0 56:0
+			ydotool key --key-delay 0 125:1 104:1 104:0 125:0
+		fi
 	fi
 }
 
 four_finger_up() { 
-	if [ -f "/var/run/user/$(id -u)/fusuma-4finger-switch" ]; then
-		ydotool key --key-delay 0 17:1 17:0 # w
+	if [ $hold_wm_mode ]; then
+		ydotool key --key-delay 0 125:1 42:1 109:1 109:0 42:0 125:0
+		# hold_wm_mode=
 	else
-		ydotool key --key-delay 0 56:0
-		ydotool key --key-delay 0 125:1 109:1 109:0 125:0
+		if [ -z $has_switched_wins ]; then
+			ydotool key --key-delay 0 56:0
+			ydotool key --key-delay 0 125:1 109:1 109:0 125:0
+		else
+			ydotool key --key-delay 0 17:1 17:0 # w
+		fi
 	fi
 }
 
+pinch_two_out() {
+	echo "pinch 2 out"
+	# switch_to_cursor_win
+	_get_cursor_win
+	state=$(xprop -id $active_win_id | grep "^_NET_WM_STATE(ATOM) =")
+	if [ -n "$(echo $state | grep _NET_WM_STATE_FULLSCREEN)" ]; then
+		# case $(xprop -id $window WM_CLASS | cut -d "\"" -f 4) in
+		case $active_win_class in
+			vlc)
+				ydo='33:1 33:0' # f
+				;;
+			xournalpp)
+				ydo='87:1 87:0' # F11
+				;;
+			kitty)
+				ydo='29:1 42:1 87:1 87:0 42:0 29:0' # ctrl + shift + F11
+				;;
+			*)
+				wmctrl -ir "$active_win_id" -b remove,fullscreen
+				# wmctrl -r ':ACTIVE:' -b remove,fullscreen
+				;;
+		esac
+		if [ "$ydo" ]; then
+			_do_focusing
+			echo $ydo | xargs ydotool key --key-delay 0
+			ydo=
+			sleep 0.1
+		fi
+	else
+		wmctrl -ir "$active_win_id" -b remove,maximized_vert,maximized_horz
+	fi
+	raise=do
+	switch_win_back
+}
+
+
+pinch_two_in() {
+	echo "pinch 2 in"
+	# switch_to_cursor_win
+	_get_cursor_win
+	state=$(xprop -id $active_win_id | grep "^_NET_WM_STATE(ATOM) =")
+	if [ -n "$(echo $state | grep "_NET_WM_STATE_FULLSCREEN")" ]; then
+		:
+	elif [ -n "$(echo $state | grep "_NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT" | grep -v "_NET_WM_STATE_FULLSCREEN")" ]; then
+		# case $(xprop -id $active_win_id WM_CLASS | cut -d "\"" -f 4) in
+		case $active_win_class in
+			vlc)
+				ydo='33:1 33:0'
+				;;
+			xournalpp)
+				ydo='87:1 87:0'
+				;;
+			firefox)
+				if [ -n "$(xprop -id $active_win_id WM_NAME | grep -iP "fmovies|youtube|tagesschau|prime video")" ]; then
+					ydo='33:1 33:0'
+				else
+					ydo='87:1 87:0'
+				fi
+				;;
+			kitty)
+				ydo='29:1 42:1 87:1 87:0 42:0 29:0'
+				;;
+			Evince)
+				ydo='17:1 17:0'
+				;;
+			*)
+				# wmctrl -r ":ACTIVE:" -b add,fullscreen
+				wmctrl -ir "$active_win_id" -b add,fullscreen
+				;;
+		esac
+		if [ "$ydo" ]; then
+			_do_focusing
+			echo $ydo | xargs ydotool key --key-delay 0
+			ydo=
+			sleep 0.1
+		fi
+	else
+		wmctrl -ir "$active_win_id" -b add,maximized_vert,maximized_horz
+	fi
+	raise=do
+	switch_win_back
+}
+
+
+# old pinch_three_in
+# window=$(xdotool getactivewindow); state=$(xprop -id $window | grep "^_NET_WM_STATE(ATOM) ="); if [ -n "$(echo $state | grep "_NET_WM_STATE_FULLSCREEN")" ]; then :; elif [ -n "$(echo $state | grep "_NET_WM_STATE_MAXIMIZED_HORZ, _NET_WM_STATE_MAXIMIZED_VERT" | grep -v "_NET_WM_STATE_FULLSCREEN")" ]; then case $(xprop -id $window WM_CLASS | cut -d "\"" -f 4) in vlc) ydotool key --key-delay 0 33:1 33:0 ;; xournalpp) ydotool key --key-delay 0 87:1 87:0 ;; firefox) if [ -n "$(xprop -id $window WM_NAME | grep -iP "fmovies|youtube|tagesschau|prime video")" ]; then ydotool key --key-delay 0 33:1 33:0; else ydotool key --key-delay 0 87:1 87:0; fi ;; kitty) ydotool key --key-delay 0 29:1 42:1 87:1 87:0 42:0 29:0 ;; *) wmctrl -r ":ACTIVE:" -b add,fullscreen ;; esac else wmctrl -r ":ACTIVE:" -b add,maximized_vert,maximized_horz; fi
+pinch_three_in() {
+	case $(xprop -id $(xdotool getactivewindow) WM_CLASS | cut -d '"' -f 4) in
+		kitty|Tilix)
+			ydotool key --key-delay 0 56:1 1:1 1:0 56:0
+			;;
+		*)
+			ydotool key --key-delay 0 125:1 5:1 5:0 125:0
+			;;
+	esac
+}
+
+pinch_three_out() {
+	# ydotool key --key-delay 0 125:1 125:0 # meta
+	gdbus call --session --dest org.gnome.Shell --object-path /dev/ramottamado/EvalGjs --method dev.ramottamado.EvalGjs.Eval "Main.overview.toggle();"
+}
+
+pinch_four_in() {
+	ydotool key --key-delay 0 56:1 106:1 106:0 56:0 # alt + left
+}
+
+pinch_four_out() {
+	ydotool key --key-delay 0 56:1 105:1 105:0 56:0 # alt + right
+}
+
+renice -11 -p $$
+echo commands sourced
+
+# remember ids of guake windows
+guake=$(xdotool search --classname Guake)

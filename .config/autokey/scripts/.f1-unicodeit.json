@@ -2,10 +2,8 @@
     "type": "script",
     "description": "f1-unicodeit",
     "store": {},
-    "modes": [
-        3
-    ],
-    "usageCount": 644,
+    "modes": [],
+    "usageCount": 653,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,

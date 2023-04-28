@@ -4,9 +4,7 @@
     "store": {
         "last": 0
     },
-    "modes": [
-        3
-    ],
+    "modes": [],
     "usageCount": 141,
     "prompt": false,
     "omitTrigger": false,

@@ -2,10 +2,8 @@
     "type": "script",
     "description": "ctrlslash",
     "store": {},
-    "modes": [
-        3
-    ],
-    "usageCount": 83,
+    "modes": [],
+    "usageCount": 119,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,

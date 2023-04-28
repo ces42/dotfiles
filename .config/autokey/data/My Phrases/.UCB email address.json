@@ -1,10 +1,8 @@
 {
     "type": "phrase",
     "description": "UCB email address",
-    "modes": [
-        3
-    ],
-    "usageCount": 39,
+    "modes": [],
+    "usageCount": 131,
     "prompt": false,
     "omitTrigger": false,
     "matchCase": false,

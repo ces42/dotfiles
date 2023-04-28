@@ -1,3 +1,7 @@
+text = clipboard.get_selection()
+import os
+os.system(f'notify-send.sh --expire-time=1000 --force-expire "{text}"')
+
 keyboard.send_keys('<ctrl>+<shift>+<left>')
 
 keyboard.send_keys('<ctrl>+<shift>+<left>')

@@ -2,10 +2,8 @@
     "type": "script",
     "description": "ctrle",
     "store": {},
-    "modes": [
-        3
-    ],
-    "usageCount": 10,
+    "modes": [],
+    "usageCount": 27,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,
@@ -24,7 +22,7 @@
         "hotKey": "e"
     },
     "filter": {
-        "regex": "discord.discord|libreoffice.libreoffice-calc|M-13.0.Mathematica",
+        "regex": null,
         "isRecursive": false
     }
 }

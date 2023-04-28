@@ -3,7 +3,7 @@
     "description": "test",
     "store": {},
     "modes": [],
-    "usageCount": 107,
+    "usageCount": 135,
     "prompt": false,
     "omitTrigger": false,
     "showInTrayMenu": false,
@@ -16,11 +16,8 @@
         "wordChars": "[\\w]"
     },
     "hotkey": {
-        "modifiers": [
-            "<alt>",
-            "<shift>"
-        ],
-        "hotKey": "g"
+        "modifiers": [],
+        "hotKey": "<f2>"
     },
     "filter": {
         "regex": null,

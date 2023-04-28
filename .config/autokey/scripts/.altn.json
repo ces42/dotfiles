@@ -2,13 +2,11 @@
     "type": "script",
     "description": "altn",
     "store": {},
-    "modes": [
-        3
-    ],
-    "usageCount": 43,
+    "modes": [],
+    "usageCount": 44,
     "prompt": false,
     "omitTrigger": false,
-    "showInTrayMenu": true,
+    "showInTrayMenu": false,
     "abbreviation": {
         "abbreviations": [],
         "backspace": true,
@@ -24,7 +22,7 @@
         "hotKey": "n"
     },
     "filter": {
-        "regex": "(Navigator.firefox|M-13.0.Mathematica|org.gnome.Nautilus.Org.gnome.Nautilus)",
+        "regex": "(Navigator.firefox|M-13.0.Mathematica|org.gnome.Nautilus.org.gnome.Nautilus|nemo\\.Nemo)",
         "isRecursive": false
     }
 }

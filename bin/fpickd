@@ -65,14 +65,15 @@ eval $find_cmd | sed $SED | fzf \
 		--tiebreak=length \
 		--scheme=path \
 		--preview 'f=$(echo {} | sed "'$SEDBACK'"); ls -lah --color=always $f && { [[ $(file --mime $f | awk -F";" "{print $1}") =~ application/pdf ]] && pdftotext -l 10 $f - | head -500 } || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ image ]] && tiv $f -w 77 -h 300 2> /dev/null} || { [[ $(file --mime $f | awk -F";" "{print $1}") =~ binary ]] && echo binary file } || { [[ $f == *.ipynb ]] && jut --force-colors $f | head -500 } || { (bat --style=numbers --color=always $f) 2> /dev/null | head -500 }' \
-		--bind "ctrl-y:execute-silent(echo -n {} | xclip -i)" \
-		--bind "ctrl-c:execute-silent(echo -n {} | xclip -i -selection clipboard)" \
+		--bind "ctrl-y:execute-silent(echo -n {} | sed '$SEDBACK' | xclip -i)" \
+		--bind "ctrl-c:execute-silent(echo -n {} | sed '$SEDBACK' | xclip -i -selection clipboard)" \
 		--bind "ctrl-alt-n:page-down,ctrl-alt-p:page-up" \
 		--bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
-		--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "write! $tmp" >&3; mv -n {} "$(cat $tmp)")+'"reload($find_cmd)" \
+		--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | nnoremap q :qa!<CR> | write! $tmp" >&3; mv -nT "$(echo {} | sed "'$SEDBACK'")" "$(cat $tmp | sed "'$SEDBACK'")")+'"reload($find_cmd)" \
+		--bind 'f4:execute-silent(trash "$(echo {} | sed "'$SEDBACK'")")+'"reload($find_cmd)" \
 		--bind "alt-d:change-prompt(D> )+reload($find_cmd --type d)" \
 		--bind "alt-f:change-prompt(F> )+reload($find_cmd --type f )"\
-		--bind "alt-h:change-prompt(H> )+reload($find_cmd -H -E '.cache' -E '.cargo' -E '.dotfiles' -E '**/drive_c' -E '**/dosdevices')"\
+		--bind "alt-h:change-prompt(H> )+reload($find_cmd -H -E '.cache' -E '.cargo' -E '.dotfiles' -E '**/drive_c/*' -E '**/dosdevices/*')"\
 		--bind "f5:reload($find_cmd)" \
 		--preview-window "right:50%:border-left:hidden" \
 		--color=fg:#ffffff,hl:#00a000 \

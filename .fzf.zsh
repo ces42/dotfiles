@@ -14,11 +14,12 @@ FZF_ALT_C_COMMAND='fd --no-ignore-parent --strip-cwd-prefix -L --no-ignore-vcs -
 FZF_CTRL_T_OPTS='--reverse --tiebreak=length --scheme=path --info inline'\
 ' --preview "ls -lah --color=always {} && { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ binary ]] && echo binary file } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }"'\
 ' --bind "ctrl-y:execute-silent(echo -n {} | xclip -i)"'\
-' --bind "f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept"'\
+' --bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept"'\
 ' --bind "alt-d:change-prompt(D> )+reload('${(q)FZF_ALT_C_COMMAND}')"'\
 ' --bind "alt-f:change-prompt(F> )+reload('${(q)FZF_CTRL_T_COMMAND}')"'\
 ' --bind "f5:reload('${(q)FZF_CTRL_T_COMMAND}')"'\
-' --preview-window "right:50%:hidden"'
+' --preview-window "right:50%:hidden"'\
+' --bind '"'"'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | map q :qa!<CR> |write! $tmp" >&9; mv -nT {} "$(cat $tmp)")'"'"\
 
 FZF_ALT_C_OPTS='--reverse --tiebreak=length --scheme=path --info inline'\
 ' --preview "ls -lah --color=always {}" --bind "ctrl-y:execute-silent(echo -n {} | xclip -i)"'\

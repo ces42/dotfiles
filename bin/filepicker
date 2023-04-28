@@ -14,10 +14,10 @@ PATH="$PATH:$HOME/.fzf/bin"
 tput smkx
 IGNORES=(--no-ignore-vcs -E '{*.aux,*.bbl,*.blg,*.fls,*.toc,*.out,*.fdb_latexmk,*.synctex.gz}')
 
-
+dirs=(/home/ca/ /home/ca/.config/nvim /home/ca/.oh-my-zsh)
 
 out=$(
-fd --strip-cwd-prefix -L "${IGNORES[@]}" | sed $SED | fzf $*\
+fd --strip-cwd-prefix -L "${IGNORES[@]}" . $dirs | sed $SED | fzf $*\
 		--multi \
 		--reverse \
 		--tiebreak=length \
@@ -26,7 +26,7 @@ fd --strip-cwd-prefix -L "${IGNORES[@]}" | sed $SED | fzf $*\
 		--bind "f2:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
 		--bind "alt-d:change-prompt(D> )+reload(fd --strip-cwd-prefix -L --type d $IGNORES)" \
 		--bind "alt-f:change-prompt(F> )+reload(fd --strip-cwd-prefix -L --type f $IGNORES)"\
-		--bind "f5:reload(fd --strip-cwd-prefix -L $IGNORES)" \
+		--aind "f5:reload(fd --strip-cwd-prefix -L $IGNORES)" \
 		--preview-window "right:50%:border-left:hidden" \
 		--color=fg:#ffffff,hl:#00a000 \
 		--color=fg+:#ffff20,bg+:#262626,hl+:#20ff20 \

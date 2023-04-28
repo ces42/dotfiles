@@ -3,8 +3,7 @@ Content that I remember being here
  - 32 bit libraries that were required for Civ V (cracked... Or maybe wine?)
  - 
 
-# caps-lock and escape:
- - caps2esc??
+# OLD: interception + caps2esc:
 `/etc/systemd/system/udevmon.service:`
 ```
 [Unit]
@@ -28,6 +27,10 @@ WantedBy=multi-user.target
 ```
 
 - In 22.04 this requires installing libyaml v0.6 manually, e.g. from [here](http://ftp.de.debian.org/debian/pool/main/y/yaml-cpp/libyaml-cpp0.6_0.6.3-9_amd64.deb)
+
+# keyd for modifying keyboard functions
+- `https://github.com/rvaiya/keyd`
+- conf file is `/etc/keyd/default.conf`
  
 
 # ydotool
@@ -73,5 +76,23 @@ WantedBy=default.target
 - reinstall `iio-sensor-proxy`
 
 # Fix lag when using ydotool
+- Tag: mutter, libmutter
 - https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/1858#note_818548
 - For compiling mutter I had to add the `--dpkg-shlibdeps-params=--ignore-missing-info` to `dh_shlipdeps` in `debian/rules`
+
+# GSConnect
+- binding keys: `https://github.com/GSConnect/gnome-shell-extension-gsconnect/issues/1215`
+
+# Nemo
+- make it default FM `xdg-mime default nemo.desktop inode/directory application/x-gnome-saved-search` (https://askubuntu.com/questions/1066752/how-to-set-nemo-as-the-default-file-manager-in-ubuntu/1173861#1173861)
+- Edit shortcuts: `gsettings set org.gnome.desktop.interface can-change-accels true`
+- use kitty: `gsettings set org.cinnamon.desktop.default-applications.terminal exec kitty-tab`
+
+# Tor upstart daemon
+- https://askubuntu.com/questions/256911/how-to-prevent-tor-from-starting-automatically-on-ubuntu-server#266241
+- adding `RUN_DAEMON="no"` to `/etc/default/tor` didn't seem to work
+-  ran `systemctl disable tor.service`, `systemctl disable tor@default.service`
+
+
+# Tuned
+- disabled but keep installed (I'm not sure any of these settings would help?)

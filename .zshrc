@@ -1,5 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+exec 9>&1
 
 # for profiling zsh startup
 # PROFILE_STARTUP=true
@@ -20,7 +21,7 @@ fi
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
 
@@ -110,12 +111,15 @@ source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
 _Z_NO_RESOLVE_SYMLINKS="true"
 source ~/.oh-my-zsh/custom/plugins/git/git.plugin.zsh
 
-source ~/.oh-my-zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
+source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
 
 source ~/.oh-my-zsh/custom/plugins/zsh-completions/zsh-completions.plugin.zsh
 
 # syntax highlighting (this probably should be managed via oh-my-zsh...)
-source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# https://github.com/zdharma-continuum/fast-syntax-highlighting
+source ~/.oh-my-zsh/custom/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 
 source ~/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh
 
@@ -152,23 +156,23 @@ _zsh_autosuggest_strategy_zoxide() {
 	else
 		return
 	fi
-	ans=$(zoxide query $query 2>/dev/null)
+	ans=$(eval "zoxide query $query" 2>/dev/null)
 	if [[ $? == 0 ]]; then
 		rel=${ans#$PWD/}
-		if [[ ! "$rel" == "$ans" ]]; then
-			short=$rel
-		else
-			short=$(print -D $ans)
-		fi
 
-		if [[ "$ans" =~ "^$query.*" ]]; then
-			suggestion="z $ans # ✔"
-		elif [[ "$rel" =~ "^$query.*" ]]; then
-			suggestion="z $rel # ✔"
+		if [[ "z $ans" =~ "^$1.*" ]]; then
+			typeset -g suggestion="z $ans # ✔"
+		elif [[ "z $rel" =~ "^$1.*" ]]; then
+			typeset -g suggestion="z $rel # ✔"
 		# elif [[ "$short" =~ "^$query.*" ]]; then
 		# 	suggestion="z $short # ✔"
 		else
-			suggestion=' # -> '$short
+			if [[ ! "$rel" == "$ans" ]]; then
+				short=$rel
+			else
+				short=$(print -D $ans)
+			fi
+			typeset -g suggestion="$1 # -> "$short
 		fi
 
 
@@ -180,11 +184,11 @@ _zsh_autosuggest_strategy_zoxide() {
 		# 	suggestion=' # -> '${$(print -D $ans)#$(print -D $PWD)/#./}
 		# fi
 	else
-		suggestion=" # ✘"
+		typeset -g suggestion="$1 # ✘"
 	fi
 }
 
-ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top)
+ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top completion)
 
 # }}}
 
@@ -244,8 +248,8 @@ function mkcd() {
 
 # make `cd <filename>` take me to the directory of that file
 cd() {
-  [[ ! -e $argv[-1] ]] || [[ -d $argv[-1] ]] || argv[-1]=${argv[-1]%/*}
-  builtin cd "$@"
+    [[ ! -e $argv[-1] ]] || [[ -d $argv[-1] ]] || argv[-1]=${argv[-1]%/*}
+    builtin cd "$@"
 }
 
 function o() {
@@ -335,6 +339,7 @@ function home_dir {
 		$precmd
 	done
 	zle reset-prompt
+	zle autosuggest-fetch
 }
 zle -N home_dir
 bindkey '\eOP' home_dir
@@ -423,7 +428,7 @@ function man() {
 		man "$@"
 }
 
-# !! keep zsh-syntax-hightliting at end of .zshrc !!
+# !! keep zsh-syntax-highlighting at end of .zshrc !!
 
 # for profiling zsh startup
 if [[ "$PROFILE_STARTUP" == true ]]; then
@@ -433,13 +438,20 @@ if [[ "$PROFILE_STARTUP" == true ]]; then
 fi
 
 # https://superuser.com/questions/836636/how-to-show-a-caret-c-in-canceled-command-line-in-zsh-like-bash-does
-TRAPINT() {
-	zle && {
-		zle autosuggest-clear
-		print -n "$fg[red]^C$reset_prompt"
-		return $(( 128 + $1  ))
-	}
-}
+# TRAPINT() {
+# 	zle && {
+# 		zle autosuggest-clear
+# 		print -n "$fg[red]^C$reset_prompt"
+# 		return $(( 128 + $1  ))
+# 	}
+# }
+# unfortunately powerlevel10k completely overrides the ability to define trap functions
+local _trap_code='zle autosuggest-clear; print -n "$bg[white]$fg[black]^C$reset_prompt"'
+
+local _p9k_trap_source=$(which _p9k_trapint)
+local _mod_trap_source=$(echo $_p9k_trap_source | sed 's/^\(\s*\)zle && \(.*\)/\1zle \&\& {\n\1    \2\n\1    '$_trap_code'\n\1}/')
+eval $_mod_trap_source
+
 
 # del-prompt-accept-line() {
 #     OLD_PROMPT="$PROMPT"
@@ -455,12 +467,12 @@ TRAPINT() {
 # This speeds up pasting w/ autosuggest
 # https://github.com/zsh-users/zsh-autosuggestions/issues/238
 pasteinit() {
-  OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
-  zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
+    OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
+    zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
 }
 
 pastefinish() {
-  zle -N self-insert $OLD_SELF_INSERT
+    zle -N self-insert $OLD_SELF_INSERT
 }
 zstyle :bracketed-paste-magic paste-init pasteinit
 zstyle :bracketed-paste-magic paste-finish pastefinish

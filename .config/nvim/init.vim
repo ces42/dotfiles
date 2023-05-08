@@ -376,10 +376,14 @@ nmap ß ys
 nmap ßß yss
 
 " AltGr + : for lua command mode
-nnoremap ¶ :lua 
+nnoremap ¶ :lua
 
 " QQ to leave vim
 nnoremap QQ :qa<enter>
+
+" Alt-C to copy current filename to clipboard
+nnoremap <M-c> :let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
+inoremap <M-c> <C-o>:let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 
 " }}}
 
@@ -529,3 +533,51 @@ augroup END
 
 "profile start output.log
 "profile func *
+
+
+" -----------------------------------------------------------------------
+" for debugging/experimenting
+" -----------------------------------------------------------------------
+
+function Debug(arg)
+    call system('echo dbg:' . string(a:arg) . '> /tmp/fifo')
+endfunction
+
+
+" au CmdlineChanged * lua require'lualine'.refresh()
+" au CmdlineChanged * redrawstatus
+
+function! Searchcount() abort
+    if !v:hlsearch
+        return ''
+    endif
+
+    try
+        let cnt = searchcount({'maxcount': 0, 'timeout': 50})
+        " lua cnt = vim.fn.searchcount({maxcount = 0, timeout = 50})
+        " call Debug('count')
+        " call Debug(cnt.total)
+        " lua vim.fn.Debug(cnt.total)
+    catch /^Vim\%((\a\+)\)\=:\%(E486\)\@!/
+        return '[?/??]'
+    endtry
+
+    if empty(cnt)
+        return ''
+    endif
+
+    return cnt.total
+            \ ? cnt.incomplete
+            \   ? printf('[%d/??]', cnt.current)
+            \   : printf('[%d/%d]', cnt.current, cnt.total)
+            \ : '[0/0]'
+endfunction
+
+lua << EOF
+function lua_sc()
+    s = vim.fn.Searchcount()
+    return s .. "lua"
+end
+EOF
+
+" set statusline=%<%f\ %h%m%r\ %{Searchcount()}%=%-14.(%l,%c%V%)\ %P

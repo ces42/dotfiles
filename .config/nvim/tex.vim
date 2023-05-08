@@ -260,36 +260,35 @@ function! Tex_tr_FileRead()
     "exe "noautocmd sil r! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
     exe "noautocmd r" . fnameescape(expand("<amatch>"))
     let b:translate_tex_unicode = 1
-    exe "sil doau FileReadPost " .fnameescape(expand("<amatch>"))
+    exe "sil doau FileReadPost " . fnameescape(expand("<amatch>"))
 endfunction
 
-" function! Tex_tr_BufRead()
-"     let l1 = line("'\"")
-"     exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
-"     " let l2 =  line("'\"")
-"     " exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
-"     exe "noautocmd e " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
-"     " let l3 = line("'\"")
-"     lua require('tr_tex_chr')
-"     lua tr_buffer()
-"     let b:translate_tex_unicode = 1
-"     exe "sil doau BufReadPost " .fnameescape(expand("<amatch>"))
-"     exe l1 .. 'mark \"'
-"     normal! g`"
-"     " echo l1 l2 l3 line("'\"")
-" endfunction
+function! Tex_tr_BufRead()
+    " let l1 = line("'\"")
+    exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
+    " let l2 =  line("'\"")
+    " exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+    " exe "noautocmd e " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
+    " let l3 = line("'\"")
+    exe "sil lua read_tr_buffer('" . fnameescape(expand("<amatch>")) . "')"
+    let b:translate_tex_unicode = 1
+    exe "sil doau BufReadPost " . fnameescape(expand("<amatch>"))
+    " exe l1 .. 'mark \"'
+    " normal! g`"
+    " echo l1 l2 l3 line("'\"")
+endfunction
 
 function! Tex_tr_FileWrite()
     exe "sil doau FileWritePre " . fnameescape(expand("<amatch>"))
     exe "noautocmd sil py3 tr_write_file('" .fnameescape(expand("<amatch>")) . "')"
-    exe "sil doau FileWritePost " .fnameescape(expand("<amatch>"))
+    exe "sil doau FileWritePost " . fnameescape(expand("<amatch>"))
     set nomodified
 endfunction
 
 function! Tex_tr_BufWrite()
     exe "sil doau BufWritePre " . fnameescape(expand("<amatch>"))
     exe "noautocmd sil py3 tr_write_buffer('" .fnameescape(expand("<amatch>")) . "')"
-    exe "sil doau BufWritePost " .fnameescape(expand("<amatch>"))
+    exe "sil doau BufWritePost " . fnameescape(expand("<amatch>"))
     set nomodified
 endfunction
 

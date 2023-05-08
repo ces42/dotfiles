@@ -30,7 +30,7 @@ set -m
 
 # main loop
 while true; do
-input=$(cat $PIPE)
+input=$(<$PIPE)
 
 xdotool windowmap $WID
 # xdotool windowfocus $WID
@@ -40,7 +40,8 @@ xdotool windowmap $WID
 {
 	# trap 'kill -- -$$; exit' SIGINT
 	while true; do
-		cat $PIPE > /dev/null
+		# cat $PIPE > /dev/null
+		< $PIPE > /dev/null
 		xdotool windowraise $WID
 	done
 }&
@@ -69,7 +70,7 @@ eval $find_cmd | sed $SED | fzf \
 		--bind "ctrl-c:execute-silent(echo -n {} | sed '$SEDBACK' | xclip -i -selection clipboard)" \
 		--bind "ctrl-alt-n:page-down,ctrl-alt-p:page-up" \
 		--bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
-		--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | nnoremap q :qa!<CR> | write! $tmp" >&3; mv -nT "$(echo {} | sed "'$SEDBACK'")" "$(cat $tmp | sed "'$SEDBACK'")")+'"reload($find_cmd)" \
+		--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | nnoremap q :qa!<CR> | write! $tmp" >&3; mv -nT "$(echo {} | sed "'$SEDBACK'")" "$(sed "'$SEDBACK'" < $tmp)")+'"reload($find_cmd)" \
 		--bind 'f4:execute-silent(trash "$(echo {} | sed "'$SEDBACK'")")+'"reload($find_cmd)" \
 		--bind "alt-d:change-prompt(D> )+reload($find_cmd --type d)" \
 		--bind "alt-f:change-prompt(F> )+reload($find_cmd --type f )"\

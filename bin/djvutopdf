@@ -17,7 +17,7 @@ fi
 
 #
 # Set up the temporary storage
-# 
+#
 
 tmpdir=$(mktemp -d)
 cd $tmpdir
@@ -33,7 +33,7 @@ trap "cleanup" EXIT # makes sure we clean up after ourselves
 # Extract raw pages and text
 #
 
-ddjvu -format=tiff "$file_in" tmp_multipage.tiff
+ddjvu -format=tiff -quality=80 "$file_in" tmp_multipage.tiff
 tiffsplit tmp_multipage.tiff tmp_page_
 rm tmp_multipage.tiff
 num_pages=$(djvused -e 'n' "$file_in")

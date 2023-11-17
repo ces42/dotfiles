@@ -1,8 +1,0 @@
-#!/bin/bash
-
-# Shim script run from deja-dup in place of duplicity 
-# which forces the exclusions read from ~/.config/deja-dup-excludes 
-# using the standard filelist exclusion mechanism
-# see https://askubuntu.com/questions/690990/can-i-ignore-files-by-pattern-in-deja-dup-backup
-
-nice -n 1 /usr/bin/duplicity --include=$HOME/.cache/deja-dup/metadata --exclude-filelist=$HOME/.config/deja-dup-excludes "$@"

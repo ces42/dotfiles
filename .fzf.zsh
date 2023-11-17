@@ -12,7 +12,7 @@ FZF_CTRL_T_COMMAND='fd --no-ignore-parent --strip-cwd-prefix -L --no-ignore-vcs 
 FZF_ALT_C_COMMAND='fd --no-ignore-parent --strip-cwd-prefix -L --no-ignore-vcs -t d'
 
 FZF_CTRL_T_OPTS='--reverse --tiebreak=length --scheme=path --info inline'\
-' --preview "ls -lah --color=always {} && { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ binary ]] && echo binary file } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }"'\
+' --preview "exa -la --color=always {} && { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ application/pdf ]] && pdftotext -l 10 {} - | head -500 } || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ image ]] && tiv {} -w 77 -h 300 2> /dev/null} || { [[ $(file --mime {} | awk -F\";\" \"{print $1}\") =~ binary ]] && echo binary file } || { [[ {} == *.ipynb ]] && jut --force-colors {} | head -500 } || { (bat --style=numbers --color=always {}) 2> /dev/null | head -500 }"'\
 ' --bind "ctrl-y:execute-silent(echo -n {} | xclip -i)"'\
 ' --bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept"'\
 ' --bind "alt-d:change-prompt(D> )+reload('${(q)FZF_ALT_C_COMMAND}')"'\

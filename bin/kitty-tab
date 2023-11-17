@@ -5,11 +5,24 @@ if [ -z "$1" ]; then
 	dir=$(pwd)
 else
 	dir=$1
+	shift
 fi
+
+if [ "$1" = "--no-focus" ]; then
+	no_focus=1
+	echo no focus
+	shift
+fi
+
+sleep 1
 if [ -n $pid ]; then
-	id=$(kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab --cwd "$dir")
-	kitty @ --to "unix:@kittyc1748-$pid" focus-window
-	kitty @ --to "unix:@kittyc1748-$pid" focus-tab -m id:$id
+	if [ -z "$no_focus" ]; then
+		id=$(kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab --cwd "$dir" "$@")
+		# kitty @ --to "unix:@kittyc1748-$pid" focus-window
+		# kitty @ --to "unix:@kittyc1748-$pid" focus-tab -m id:$id
+	else
+		id=$(kitty @ --to "unix:@kittyc1748-$pid" launch --dont-take-focus --type=tab --cwd "$dir" "$@")
+	fi
 else
-	kitty -d "$dir"
+	kitty -d "$dir" "$@"
 fi

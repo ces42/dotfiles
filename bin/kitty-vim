@@ -1,12 +1,13 @@
 #!/bin/sh
 
 pid=$(pgrep --runstate S --uid $USER ^kitty$ | head -n 1)
+# pid=${$(pgrep --runstate S --uid $USER ^kitty$)[1]}
 if [ -z $pid ]; then
 	echo 'launching new kitty'
-	kitty vi $*
+	kitty vi "$@"
 else
 	echo "using existing process $pid"
-	id=$(kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab vi "$*")
+	id=$(kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab vi "$@")
 	#kitty @ --to "unix:@kittyc1748-$pid" launch --type=tab vi -c "normal i$KITTY_WINDOW_ID"
 	kitty @ --to "unix:@kittyc1748-$pid" focus-window
 	kitty @ --to "unix:@kittyc1748-$pid" focus-tab -m id:$id

@@ -29,10 +29,6 @@ if [[ ! -z $DTACH_ID ]]; then
 	echo "dtach ID: $DTACH_ID"
 fi
 
-if [[ $PWD == /data/* ]] ; then
-    cd ~/${PWD:6}
-fi
-
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -88,7 +84,7 @@ if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
 	source /etc/profile.d/vte.sh
 fi
 
-export PATH=~/bin/prio:$PATH:~/bin
+# export PATH=~/bin/prio:$PATH:~/bin
 
 # source $ZSH/oh-my-zsh.sh
 source $ZSH/my-zsh.sh
@@ -128,12 +124,20 @@ source ~/.oh-my-zsh/plugins/zoxide/zoxide.plugin.zsh
 source ~/.oh-my-zsh/custom/plugins/zsh-histdb/zsh-histdb.plugin.zsh
 autoload -Uz add-zsh-hook
 
-source /home/ca/.oh-my-zsh/custom/plugins/zsh-histdb-fzf/fzf-histdb.zsh
+source ~/.oh-my-zsh/custom/plugins/zsh-histdb-fzf/fzf-histdb.zsh
+
+source ~/.oh-my-zsh/custom/plugins/zsh-notify/notify.plugin.zsh
+zstyle ':notify:*' error-title "Command failed (in #{time_elapsed} seconds)"
+zstyle ':notify:*' success-title "Command finished (in #{time_elapsed} seconds)"
+zstyle ':notify:*' disable-urgent yes
+zstyle ':notify:*' expire-time 2500
+zstyle ':notify:*' app-name zsh
 
 # }}}
 
 # zsh-autosuggestions {{{
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1 #https://github.com/zsh-users/zsh-autosuggestions#disabling-automatic-widget-re-binding
+_BORING_COMMANDS=("^ls$" "^cd$" "^ " "^histdb" "^top$" "^htop$" '^\.\.+$' '^~$' '^exit$' '^z ')
 
 _zsh_autosuggest_strategy_histdb_top() {
 	local query="
@@ -141,11 +145,40 @@ _zsh_autosuggest_strategy_histdb_top() {
 		left join commands on history.command_id = commands.rowid
 		left join places on history.place_id = places.rowid
 		where commands.argv LIKE '$(sql_escape $1)%'
-		group by commands.argv, places.dir, start_time
-		order by places.dir != '$(sql_escape $PWD)', exit_status, start_time desc, count(*) desc
+		group by commands.argv, places.dir
+		order by places.dir != '$(sql_escape $PWD)', exit_status IS NULL, min(exit_status), count(commands.argv) desc, max(start_time) desc
 		limit 1
 		"
 		suggestion=$(_histdb_query "$query")
+}
+
+_zsh_autosuggest_strategy_histdb_top_sudo() {
+	if [[ "$1" =~ '_ .*' ]]; then
+		q=${1#_ }
+	elif [[ "$1" =~ 'sudo .*' ]]; then
+		q=${1#sudo }
+	else
+		return
+	fi
+	local query="
+	select commands.argv from history
+		left join commands on history.command_id = commands.rowid
+		left join places on history.place_id = places.rowid
+		where commands.argv LIKE '_ $(sql_escape $q)%' OR commands.argv LIKE 'sudo $(sql_escape $q)%' OR commands.argv LIKE '$(sql_escape $q)%'
+		group by commands.argv, places.dir, start_time
+		order by commands.argv LIKE '$(sql_escape $q)%', places.dir != '$(sql_escape $PWD)', exit_status IS NULL, min(exit_status), count(commands.argv) desc, max(start_time) desc
+		limit 1
+		"
+		suggestion=$(_histdb_query "$query")
+		if [ -n "$suggestion" ]; then
+			if [[ "$suggestion" =~ '_ .*' ]]; then
+				suggestion="$1${suggestion#_ $q}"
+			elif [[ "$suggestion" =~ 'sudo .*' ]]; then
+				suggestion="$1${suggestion#sudo $q}"
+			else
+				suggestion="$1${suggestion#$q}"
+			fi
+		fi
 }
 
 _zsh_autosuggest_strategy_zoxide() {
@@ -188,7 +221,7 @@ _zsh_autosuggest_strategy_zoxide() {
 	fi
 }
 
-ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top completion)
+ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top_sudo histdb_top completion)
 
 # }}}
 
@@ -306,23 +339,39 @@ bindkey "\C-h" backward-kill-word # ctrl + BS
 bindkey "\e[3;5~" kill-word # ctrl + del
 #bindkey -s "\ez" "  \e[D\C-k\C-a\C-k cd -\015\C-y\C-y\ey\C-x\C-x\e[D\e[3~\e[3~"
 #bindkey -s "\ee" "  \e[D\C-k\C-a\C-k nautilus . 2>/dev/null&\015\C-y\C-y\ey\C-x\C-x\e[D\e[3~\e[3~"
-bindkey -s "\ez" "\C-q cd -\C-m"
-bindkey -s "\eE" "\C-q nautilus . 2>/dev/null&\C-m"
+
+# bindkey -s "\eE" "\C-q nautilus . 2>/dev/null&\C-m"
+function _zle_guifiles {
+	xdg-open . 2>&1 >/dev/null
+}
+zle -N _zle_guifiles
+bindkey "\eE" _zle_guifiles
+
 #bindkey -s "\C-f" "\e[A | grep -e \'\'\e[D"
 bindkey "\ep" up-line-or-beginning-search
 bindkey "\en" down-line-or-beginning-search
 bindkey -M menuselect '?' history-incremental-search-forward
 bindkey -s "\e#" "\C-a#\C-m"
-bindkey -s "\eL" "\C-q ls -lah\C-m"
+
+bindkey -s "\eL" "\C-q exa -lah\C-m"
 bindkey -s "\el" "\C-q ls\C-m"
+# function _zle_ls { zle push-line; echo; ls; zle redisplay }
+# function _zle_ll { exa -lhH }
+# zle -N _zle_ls
+# zle -N _zle_ll
+# bindkey "\el" _zle_ls
+# bindkey "\eL" _zle_ll
+
 bindkey "\e[1;3C" forward-char
 bindkey "\e[1;3D" backward-char
 bindkey "\e;" forward-char
 
-# noop () { }
-# zle -N noop
-# bindkey "\e" noop
-# KEYTIMEOUT=5
+bindkey '\t' menu-complete # https://unix.stackexchange.com/questions/665913/how-to-make-zsh-immediately-show-all-completions-without-first-inserting-the
+
+noop () { }
+zle -N noop
+bindkey "\e" noop
+KEYTIMEOUT=50
 
 autoload -U select-word-style
 backward-kill-WORD () {
@@ -333,7 +382,7 @@ backward-kill-WORD () {
 zle -N backward-kill-WORD
 bindkey '\C-w' backward-kill-WORD
 
-function home_dir {
+function _zle_home_dir {
 	cd
 	for precmd in $precmd_functions; do
 		$precmd
@@ -341,9 +390,20 @@ function home_dir {
 	zle reset-prompt
 	zle autosuggest-fetch
 }
-zle -N home_dir
-bindkey '\eOP' home_dir
-bindkey '\e[2~' home_dir
+function _zle_updir {
+	cd - > /dev/null
+	for precmd in $precmd_functions; do
+		$precmd
+	done
+	zle reset-prompt
+	zle autosuggest-fetch
+}
+zle -N _zle_home_dir
+zle -N _zle_updir
+
+bindkey '\eOP' _zle_home_dir
+bindkey '\e[2~' _zle_home_dir
+bindkey '\ez' _zle_updir
 
 # Alt + M toggles mouse
 # bindkey "\em" zle-mouse-toggle # Alt + m to toggle mouse
@@ -484,3 +544,6 @@ zstyle :bracketed-paste-magic paste-finish pastefinish
 # For dotfiles management (see https://www.atlassian.com/git/tutorials/dotfiles)
 # (except there it's called 'config' instead of 'dotfiles')
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+
+# Created by `pipx` on 2023-05-01 03:45:52
+export PATH="$PATH:$HOME/.local/bin"

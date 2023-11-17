@@ -272,7 +272,7 @@ unmute(){
 
 stop_localplayback(){
     kill -s TERM "$ALTPID" 2> /dev/null
-    [[ -f "$PIDFILE" ]] && PLAYER_PID="$(cat "$PIDFILE")"
+    [[ -f "$PIDFILE" ]] && PLAYER_PID="$(< "$PIDFILE")"
     kill -s TERM "$PLAYER_PID" 2> /dev/null
 }
 

@@ -1,2 +1,5 @@
 uni=~/Documents/Uni
+papers=~/Documents/papers
+Books=~/Documents/Books
 export BAT_STYLE="grid,header"
+export EDITOR=nvim

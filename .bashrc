@@ -103,8 +103,6 @@ alias psg='ps -A | grep'
 # eval $(thefuck --alias --enable-experimental-instant-mode)
 # THEFUCK_ALTER_HISTORY=true
 
-alias black='xset dpms force off'
-
 export HISTSIZE=50000
 export HISFILESIZE=5000000
 
@@ -135,7 +133,7 @@ fi
 
 unset color_prompt force_color_prompt SUDO_INDICATOR
 
-UNI=~/Documents/Uni
+# UNI=~/Documents/Uni
 
 bind -f ~/.bash_inputrc
 

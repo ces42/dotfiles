@@ -6,7 +6,8 @@ swipe:
         begin:
           # command: echo three_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
           server: three_finger_begin
-          interval: 0.1
+          interval: 0.01
+          distance: -4.3
         end:
           # command: echo three_finger_end > /var/run/user/$(id -u)/fusuma_fifo
           server: three_finger_end
@@ -16,16 +17,18 @@ swipe:
             # command: xte 'keydown Control_L' 'key Next' 'keyup Control_L'
             # command: echo three_finger_left > /var/run/user/$(id -u)/fusuma_fifo
             server: three_finger_left
-            threshold: 0.5
-            interval: 1.7
+            threshold: 0.01
+            interval: 1.0
+            distance: 5.4
         right:
           update:
             #sendkey: "LEFTCTRL+PREVIOUS"
             # command: xte 'keydown Control_L' 'key Prior' 'keyup Control_L'
             # command: echo three_finger_right > /var/run/user/$(id -u)/fusuma_fifo
             server: three_finger_right
-            threshold: 0.5
-            interval: 1.7
+            threshold: 0.01
+            interval: 1.0
+            distance: 5.4
         up:
             # command: echo three_finger_up > /var/run/user/$(id -u)/fusuma_fifo
             server: three_finger_up
@@ -40,20 +43,25 @@ swipe:
         begin:
             # command: echo four_finger_begin > /var/run/user/$(id -u)/fusuma_fifo
             server: four_finger_begin
-            interval: 0.1
+            interval: 0.01
+            distance: -4.4
         end:
             # command: echo four_finger_end > /var/run/user/$(id -u)/fusuma_fifo
             server: four_finger_end
         left:
             # command: echo four_finger_left > /var/run/user/$(id -u)/fusuma_fifo
             server: four_finger_left
-            threshold: 0.02
-            interval: 0.6
+            threshold: 0.002
+            # interval: 0.6
+            interval: 0.3
+            distance: 5.5
         right:
             # command: echo four_finger_right > /var/run/user/$(id -u)/fusuma_fifo
             server: four_finger_right
-            threshold: 0.02
-            interval: 0.6
+            threshold: 0.002
+            # interval: 0.6
+            interval: 0.3
+            distance: 5.5
         down:
             # command: xte 'keydown Super_L' 'key Prior' 'keyup Super_L'
             # command: echo four_finger_down > /var/run/user/$(id -u)/fusuma_fifo
@@ -105,33 +113,30 @@ pinch:
             server: pinch_four_out
             threshold: 0.9
 
-tap:
-    4:
-      # command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
-      server: four_finger_hold
-      threshold: 0.35
+# tap:
+#     4:
+#       # command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
+#       server: four_finger_hold
+#       threshold: 0.35
 
 
 hold:
     4:
       # command: echo four_finger_hold > /var/run/user/$(id -u)/fusuma_fifo
       server: four_finger_hold
-      threshold: 0.45
+      threshold: 0.55
 
 plugin:
   inputs:
     libinput_command_input:
       # show-keycodes: true
       device: /dev/input/by-path/pci-0000:00:15.0-platform-i2c_designware.0-event-mouse
-      enable-tap: true
-      verbose: true
+      # enable-tap: true
+      # verbose: true
+      filter-hold: [1, 2]
   executors:
     server_executor:
       pipe: /var/run/user/1000/fusuma_fifo
-  # filters:
-  #   libinput_device_filter:
-  #     keep_device_names:
-  #       - "SYNA32A2:00 06CB:CE17 Touchpad"
 
 # some experiment:
 # it seems like these are executed *in addition* to the 'server' commands

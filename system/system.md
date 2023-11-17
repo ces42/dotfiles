@@ -1,8 +1,3 @@
-Unfortunately I accidentally deleted this file...
-Content that I remember being here
- - 32 bit libraries that were required for Civ V (cracked... Or maybe wine?)
- - 
-
 # OLD: interception + caps2esc:
 `/etc/systemd/system/udevmon.service:`
 ```
@@ -78,7 +73,36 @@ WantedBy=default.target
 # Fix lag when using ydotool
 - Tag: mutter, libmutter
 - https://gitlab.gnome.org/GNOME/gnome-shell/-/issues/1858#note_818548
-- For compiling mutter I had to add the `--dpkg-shlibdeps-params=--ignore-missing-info` to `dh_shlipdeps` in `debian/rules`
+- For compiling mutter I had to add the `--dpkg-shlibdeps-params=--ignore-missing-info` to `dh_shlibdeps` in `debian/rules`
+- test can be disabled by commeting out the paragraph in `debian/rules` after `override_dh_auto_test`
+- fix crash on Gnome restart:
+```diff
+diff --git a/src/compositor/meta-compositor-x11.c b/src/compositor/meta-compositor-x11.c
+index 1ad3327dd..ce7bc1945 100644
+--- a/src/compositor/meta-compositor-x11.c
++++ b/src/compositor/meta-compositor-x11.c
+@@ -188,6 +188,8 @@ meta_compositor_x11_manage (MetaCompositor  *compositor,
+ 
+   compositor_x11->have_x11_sync_object = meta_sync_ring_init (xdisplay);
+ 
++  meta_x11_display_redirect_windows (x11_display, display);
++
+   return TRUE;
+ }
+ 
+diff --git a/src/core/display.c b/src/core/display.c
+index 0a191c0fb..787c15d60 100644
+--- a/src/core/display.c
++++ b/src/core/display.c
+@@ -1065,7 +1065,6 @@ meta_display_new (MetaContext  *context,
+ #ifdef HAVE_X11_CLIENT
+   if (display->x11_display)
+     {
+-      g_signal_emit (display, display_signals[X11_DISPLAY_OPENED], 0);
+       meta_x11_display_restore_active_workspace (display->x11_display);
+       meta_x11_display_create_guard_window (display->x11_display);
+     }
+```
 
 # GSConnect
 - binding keys: `https://github.com/GSConnect/gnome-shell-extension-gsconnect/issues/1215`
@@ -93,6 +117,20 @@ WantedBy=default.target
 - adding `RUN_DAEMON="no"` to `/etc/default/tor` didn't seem to work
 -  ran `systemctl disable tor.service`, `systemctl disable tor@default.service`
 
+# cups upstart
+- `sudo systemctl disable cups.service`
+- `sudo systemctl enable cups.socket`
+- `sudo systemctl enable cups-browsed.socket`
 
 # Tuned
 - disabled but keep installed (I'm not sure any of these settings would help?)
+
+# git
+- `git config --global diff.noprefix true`
+
+# Gnome colortheme changes depending on Uhrzeit
+- `~/bin/set_gtk_theme_by_timeofday`
+- hourly cron job in crontab
+
+# Mute when waking from sleep
+- `/lib/systemd/system-sleep/mute`

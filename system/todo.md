@@ -1,3 +1,5 @@
+- check `/etc/systemd/logind.conf`. Might need to reconfigure lid and power button events
+
 # Bugs
 - Find why system-monitor is logging so many things related to dateMenu.js
 
@@ -22,3 +24,6 @@
 - equation part textobject (delims: =, \to, \equiv, \cong, etc)
 - toggle \sin(a) <-> (\sin a)
          R_q (F) <-> (R_q F)
+
+# TOOLS
+- `dbus-send --print-reply --dest=org.gnome.Mutter.IdleMonitor /org/gnome/Mutter/IdleMonitor/Core org.gnome.Mutter.IdleMonitor.GetIdletime` to get idle time

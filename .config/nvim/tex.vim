@@ -1,12 +1,13 @@
 let g:UNICODE_ENABLED=1
-let g:vimtex = 1
 
 function! TexSetupBuffer()
     " https://castel.dev/post/lecture-notes-1
     setlocal spell
     set spelllang=en_us
+    set iskeyword+=$
+    set iskeyword+=\
     " ctrl+L in insert mode to correct last spelling mistake
-    " inoremap <buffer> <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
+    inoremap <buffer> <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
     " ctrl+backspace deletes _<digit> in one go (to undo auto-numeric-subscript snippet)
     "inoremap <buffer> <expr> <C-H> (matchstr(getline(line('.'))[0:col('.') - 2], '_\d$') != '' && vimtex#syntax#in_mathzone()) ? '<BS><BS>' : '<C-W>'
 
@@ -19,9 +20,12 @@ function! TexSetupBuffer()
     "imap <buffer> <F14> <C-\><C-O>tsd
     imap <buffer> <C-0> <C-\><C-O>tsd
     imap <buffer> <C-9> <C-\><C-O>tsd
-    inoremap <buffer> <C-4> <C-\><C-o>f$<right>
+    inoremap <buffer> <C-4> <C-\><C-o>f$
+    onoremap <buffer> <C-4> t$
     inoremap <buffer> <expr> ² vimtex#syntax#in_mathzone() ? '^2' : '²'
     inoremap <buffer> <expr> ³ vimtex#syntax#in_mathzone() ? '^3' : '³'
+    inoremap <buffer> <expr> é vimtex#syntax#in_mathzone() ? '∈' : 'é'
+    inoremap <buffer> <expr> É vimtex#syntax#in_mathzone() ? '⊆' : 'É'
     nmap <buffer> g% VaeS%
     function! Tsa()
         norm ts$
@@ -114,8 +118,8 @@ EOF
         augroup END
     endif
 
-    call vimtex#syntax#core#new_region_math('cd')
-    call vimtex#syntax#core#new_region_math('cd*')
+    call vimtex#syntax#core#new_env({'name': 'cd', 'starred': v:true, 'math': v:true})
+    " call vimtex#syntax#core#new_region_math('cd*')
 endfunction
 
 function! VimtexPreSetup()
@@ -168,7 +172,14 @@ function! VimtexPreSetup()
 
     function! Ensure_math(lhs, rhs) abort
         let l:wrap = (nvim_get_mode().mode == 'i') && !(vimtex#syntax#in_mathzone() || vimtex#syntax#in('texNewcmdArgBody'))
-        return l:wrap ? ( "$" . a:rhs . "$" ) : a:rhs
+        " return l:wrap ? ( "$" . a:rhs . "$" ) : a:rhs
+        if l:wrap
+            " let b:_quick_undo_pos = [line("."), col(".") + len(a:rhs) + 2]
+            " let b:_quick_undo_tick = b:changedtick + 3
+            return ( "$" . a:rhs . "$" )
+        else
+            return a:rhs
+        endif
     endfunction
 
     " custom insert mode shortcuts (loading takes << 1ms)
@@ -223,7 +234,7 @@ function! VimtexPreSetup()
                 \    ]
                 \  }
                 \}
-    let g:vimtex_syntax_conceal = {'accents': 0, 'cites': 0, 'fancy': 0, 'greek':0, 'math_bounds':1, 'math_delimiters':0, 'math_fracs':0, 'math_super_sub':0, 'math_symbols':0, 'sections':0, 'styles':0}
+    " let g:vimtex_syntax_conceal = {'accents': 0, 'cites': 0, 'fancy': 0, 'greek':0, 'math_bounds':1, 'math_delimiters':0, 'math_fracs':0, 'math_super_sub':0, 'math_symbols':0, 'sections':0, 'styles':0, 'spacing':0}
 
     setlocal keywordprg=texdoc
 endfunction
@@ -244,6 +255,7 @@ if g:UNICODE_ENABLED
 endif
 
 augroup vimtex_setup
+    let g:vimtex = 1
     au!
     au BufReadPost *.tex call TexSetupBuffer()
     "au BufReadPost *.tex lua 

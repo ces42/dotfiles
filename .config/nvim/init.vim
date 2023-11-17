@@ -9,6 +9,11 @@ let maplocalleader=' '
 
 set termguicolors
 " ~/.config/nvim/lua/init.lua
+
+set guifont=JuliaMono:h12
+color PaperColor
+" colorscheme catppuccin-mocha
+
 lua require('init')
 
 " let g:pymode_python = 'python3'
@@ -30,20 +35,14 @@ let g:pandoc#command#custom_open = 'evince'
 "let g:pandoc#syntax#conceal#cchar_overrides = {"strike": "-"}
 
 " auto-pairs
-let g:AutoPairsMapCh = 0
-let g:AutoPairsShortcutBackInsert='<M-v>'
+" let g:AutoPairsMapCh = 0
+" let g:AutoPairsShortcutBackInsert='<M-v>'
 
 " incsearch.vim
 "map /  <Plug>(incsearch-forward)
 "map ?  <Plug>(incsearch-backward)
 "map g/ <Plug>(incsearch-stay)
 
-
-" filetype plugin indent on " already done by plug#end()
-" syntax on " already done by plug#end()
-set guifont=JuliaMono:h12
-color PaperColor
-" colorscheme catppuccin-mocha
 
 "lua require('texlab')
 "lua require('tabout').setup{
@@ -65,11 +64,6 @@ color PaperColor
 
 
 " set signcolumn=no
-
-hi IndentBlanklineChar guifg=#2a2a2a
-"lua require("indent_blankline").setup {
-"            \    show_current_context = true,
-"            \}
 
 " UltiSnips {{{
 " Trigger configuration. Do not use 'tab' if you use https://github.com/Valloric/YouCompleteMe.
@@ -105,12 +99,6 @@ so ~/.config/nvim/tex.vim
 "au FileType tex let b:AutoPairs = AutoPairsDefine({'$' : '$'})
 "}}}
 
-
-" FireNVim {{{
-if exists('g:started_by_firenvim')
-    source ~/.config/nvim/firenvim.vim
-endif
-" }}}
 
 " targets.vim {{{
 "let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB'
@@ -194,8 +182,8 @@ func! Indent(ind)
     endif
 endfunc
 
-noremap >> :call Indent(1)<cr>
-noremap << :call Indent(0)<cr>
+nnoremap >> :call Indent(1)<cr>
+nnoremap << :call Indent(0)<cr>
 " Shift + Tab deindents line
 imap <S-Tab> <C-\><C-o><<
 
@@ -215,7 +203,7 @@ inoremap <C-R><C-R> <C-R>"
 inoremap <C-R><C-T> <C-R>*
 inoremap <C-R><C-E> <C-R>+
 " ctrl+L in insert mode to correct last spelling mistake
-inoremap <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
+inoremap <C-l> <C-o>:set spell<CR><c-g>u<Esc>[s1z=`]a<c-g>u
 " press '\h' to highlight search results
 map <leader>h :set hlsearch!<cr>
 " press '\l' to show line Numbers, '\rl' to show relative line numbers
@@ -298,6 +286,9 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
+" C-w C-] opens in new tab instead of split
+nnoremap <C-W><C-]> <C-W><C-]><C-W>T
+
 nnoremap <C-/> :noh<CR>
 " 'g/' to search for selected text in visual mode
 xnoremap g/ "zy/<C-R>z<CR>
@@ -315,6 +306,9 @@ nnoremap gy gg"+yG``
 " vnoremap <c-d> "zx
 vnoremap x "zx
 nnoremap <Del> "-x
+
+" yp to quickly duplicate current line
+nnoremap yp yyp
 
 " Shift-enter does the same as o but w/o changing mode
 nmap <S-CR> o<ESC>
@@ -338,6 +332,7 @@ nnoremap gV g^vg$
 
 " gp to select previously pasted text
 nnoremap <expr> gp '`[' . getregtype()[0] . '`]'
+vnoremap <expr> gp '`[' . 'o' . (getregtype()[0] == 'v' ? '' : getregtype()[0]) . '`]'
 
 " go and gO to insert *indented* line above/below w/o leaving normal mode
 nnoremap go o.<BS><ESC>
@@ -358,7 +353,8 @@ imap <f5> <C-o>:w<bar>make<cr>
 nnoremap <F3> :%s//g<Left><Left>
 inoremap <F3> <Esc>:%s//g<Left><Left>
 
-nnoremap g/ /\c<left><left>
+" nnoremap g/ /\c<left><left>
+nnoremap <M-/> /\c<left><left>
 
 " <C-;> as a more easily repeatable alternative to g;
 nnoremap <C-;> g;
@@ -366,6 +362,7 @@ inoremap <C-;> <C-\><C-o>g;
 
 " Alt-backspace to undo in insert mode
 inoremap <A-BS> <C-o>u
+snoremap <A-BS> <C-o>u
 
 " gs as alias for ys (vim-surround)
 nmap gs ys
@@ -376,7 +373,7 @@ nmap ß ys
 nmap ßß yss
 
 " AltGr + : for lua command mode
-nnoremap ¶ :lua
+nnoremap ¶ :lua 
 
 " QQ to leave vim
 nnoremap QQ :qa<enter>
@@ -385,12 +382,40 @@ nnoremap QQ :qa<enter>
 nnoremap <M-c> :let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 inoremap <M-c> <C-o>:let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 
+nnoremap <expr> <CR> buffer_name() == '[Command Line]' ? '<CR>' : 'ciw'
+
+" select all
+" nnoremap <leader>a gg<S-V>G
+
+" copy to ctrl-c system clipboard
+xnoremap <leader>y "+y
+xnoremap  "+y
+onoremap  y
+
+nnoremap <leader>p <cmd>Telescope register
+
+" scroll buffer while in command line
+" cnoremap <silent> <ScrollWheelDown> <c-r>=win_execute(win_getid(), "normal! \<lt>c-e>").execute('redraw')<cr>
+cnoremap <silent> <ScrollWheelDown> <c-r>=win_execute(win_getid(), "normal! \<lt>ScrollWheelDown>").execute('redraw')<cr>
+" cnoremap <silent> <ScrollWheelUp>   <c-r>=win_execute(win_getid(), "normal! \<c-y>").execute('redraw')<cr>
+cnoremap <silent> <ScrollWheelUp>   <c-r>=win_execute(win_getid(), "normal! \<lt>ScrollWheelUp>").execute('redraw')<cr>
+cnoremap <silent> <c-y>   <c-r>=win_execute(win_getid(), "normal! \<c-y>").execute('redraw')<cr>
+
 " }}}
 
 
 " commands {{{
 " save when file is readonly using sudo
-command! WW Lazy load suda.vim | SudaWrite % | e | set noreadonly
+function! SudaWriteCmd()
+    Lazy load suda.vim 
+    SudaWrite %
+    " e
+    set noreadonly
+    nnoremap <buffer> <C-S> :SudaWrite % \| set noreadonly<CR>
+    inoremap <buffer> <C-S> <C-o>:SudaWrite % \| set noreadonly<CR>
+endfunction
+" command! WW Lazy load suda.vim | SudaWrite % | e | set noreadonly | nnoremap <buffer> <C-S> :sudawrite % \| e \| set noreadonly<cr> | inoremap <buffer>
+command! WW call SudaWriteCmd()
 
 "common typos
 command! W  w
@@ -408,8 +433,8 @@ command! GL Git pull
 command! Gp Git push
 command! GP Git push
 
-command! Rc tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
-command! RC tabe ~/.config/nvim/init.vim | tabe ~/.config/nvim/lua/init.lua | tabe ~/.config/nvim/lua/plugins/misc.lua
+command! Rc cd ~/.config/nvim | tabe init.vim | tabe lua/init.lua | tabe lua/plugins/misc.lua
+command! RC cd ~/.config/nvim | tabe init.vim | tabe lua/init.lua | tabe lua/plugins/misc.lua
 
 command! -nargs=? RichPaste call RichPaste('<args>')
 command! -nargs=? RP call RichPaste('<args>')
@@ -436,6 +461,9 @@ function! RichPaste(...)
     let &shellredir=_shellredir
 endfunction
 
+" from :h :DiffOrig
+command DiffOrig vert new | set buftype=nofile | read ++edit # | 0d_
+       \ | diffthis | wincmd p | diffthis
 " }}}
 
 
@@ -470,8 +498,9 @@ autocmd DirChanged * call chansend(v:stderr, printf("\033]7;file://%s\033\\", v:
 
 " customize cursor, highlighting etc {{{
 set cul
-nnoremap <leader>v :set cul!<cr>
+" nnoremap <leader>v :set cul!<cr>
 hi CursorLine guibg=#101010
+hi LineNr guifg=#909090 guibg=#202020
 augroup cursor
     au!
     autocmd InsertEnter * highlight  CursorLine ctermbg=232
@@ -490,6 +519,8 @@ hi SpellLocal cterm=undercurl ctermbg=none guisp=cyan
 hi SpellRare cterm=undercurl ctermbg=none guisp=magenta
 
 hi Conceal ctermfg=lightblue ctermbg=none guibg=NONE
+hi Search ctermfg=0 ctermbg=11 guifg=#ffffe0 guibg=#4090d0
+hi Cursor guibg=#ffffff
 
 hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
 

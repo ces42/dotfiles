@@ -5,6 +5,7 @@ local basic = require('nvim-autopairs.rules.basic')
 local utils = require('nvim-autopairs.utils')
 
 local opt = {
+    fast_wrap = {},
     map_bs = vim.g.vimtex == nil,
     map_c_w = false,
     map_cr = true,

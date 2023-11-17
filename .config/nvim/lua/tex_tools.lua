@@ -21,8 +21,8 @@
 --endfunction
 
 function expand_font_macros()
-    onlycaps = {c = 'mathcal', sc = 'mathscr', bb = 'mathbb', s = 'mathsf'}
-    both = {bf = 'mathbf', f = 'mathfrak'}
+    local onlycaps = {c = 'mathcal', sc = 'mathscr', bb = 'mathbb', s = 'mathsf'}
+    local both = {bf = 'mathbf', f = 'mathfrak'}
     for k, v in pairs(onlycaps) do
         vim.api.nvim_command('%s/\\\\' .. k .. '\\(\\u\\)\\a\\@!/\\\\' .. v .. '{\\1}/ge')
     end

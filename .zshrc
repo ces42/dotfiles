@@ -1,9 +1,10 @@
+# vi: set fdm=marker
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 exec 9>&1
 
 # for profiling zsh startup
-# PROFILE_STARTUP=true
+PROFILE_STARTUP=false
 if [[ "$PROFILE_STARTUP" == true ]]; then
 	zmodload zsh/datetime
 	zmodload zsh/zprof
@@ -84,16 +85,6 @@ if [ $TILIX_ID ] || [ $VTE_VERSION ]; then
 	source /etc/profile.d/vte.sh
 fi
 
-# export PATH=~/bin/prio:$PATH:~/bin
-
-# source $ZSH/oh-my-zsh.sh
-source $ZSH/my-zsh.sh
-
-# set and load theme
-# ZSH_THEME="custom-powerline"
-ZSH_THEME="powerlevel10k/powerlevel10k"
-source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
-
 # Plugins {{{
 #
 # Which plugins would you like to load?
@@ -101,39 +92,33 @@ source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # ------------------------------------------------------------
-# !! currently this is also uncommented in my-zsh.sh
-# plugins=()
+plugins=(
+	# https://github.com/zdharma-continuum/fast-syntax-highlighting
+	# there is also another fork at https://github.com/z-shell/F-Sy-H
+	# F-Sy-H
+	fast-syntax-highlighting
+	git
+	zsh-autosuggestions
+	zsh-completions
+	sudo
+	zoxide
+	zsh-histdb
+	zsh-histdb-fzf
+	zsh-notify
+)
 
 _Z_NO_RESOLVE_SYMLINKS="true"
-source ~/.oh-my-zsh/custom/plugins/git/git.plugin.zsh
-
-source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.plugin.zsh
-
-source ~/.oh-my-zsh/custom/plugins/zsh-completions/zsh-completions.plugin.zsh
-
-# syntax highlighting (this probably should be managed via oh-my-zsh...)
-# source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-# https://github.com/zdharma-continuum/fast-syntax-highlighting
-source ~/.oh-my-zsh/custom/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-
-source ~/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh
-
-source ~/.oh-my-zsh/plugins/zoxide/zoxide.plugin.zsh
-
-source ~/.oh-my-zsh/custom/plugins/zsh-histdb/zsh-histdb.plugin.zsh
-autoload -Uz add-zsh-hook
-
-source ~/.oh-my-zsh/custom/plugins/zsh-histdb-fzf/fzf-histdb.zsh
-
-source ~/.oh-my-zsh/custom/plugins/zsh-notify/notify.plugin.zsh
-zstyle ':notify:*' error-title "Command failed (in #{time_elapsed} seconds)"
-zstyle ':notify:*' success-title "Command finished (in #{time_elapsed} seconds)"
-zstyle ':notify:*' disable-urgent yes
-zstyle ':notify:*' expire-time 2500
-zstyle ':notify:*' app-name zsh
-
 # }}}
+
+# source $ZSH/oh-my-zsh.sh
+source $ZSH/my-zsh.sh
+
+autoload -Uz add-zsh-hook # the zsh-histdb plugin might need this?
+
+# set and load theme
+# ZSH_THEME="custom-powerline"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
 
 # zsh-autosuggestions {{{
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1 #https://github.com/zsh-users/zsh-autosuggestions#disabling-automatic-widget-re-binding
@@ -225,6 +210,45 @@ ZSH_AUTOSUGGEST_STRATEGY=(zoxide histdb_top_sudo histdb_top completion)
 
 # }}}
 
+# zsh-notify {{{
+zstyle ':notify:*' error-title "Command failed (in #{time_elapsed} seconds)"
+zstyle ':notify:*' success-title "Command finished (in #{time_elapsed} seconds)"
+zstyle ':notify:*' expire-time 2500
+zstyle ':notify:*' app-name zsh
+zstyle ':notify:*' check-focus no
+zstyle ':notify:*' command-complete-timeout 20
+function kitty-notify() {
+    local message type time_elapsed title icon
+
+    if [[ "$TERM" != "xterm-kitty" ]] && is-terminal-active; then
+		echo "TERM=$TERM"
+		zsh-notify "$@"
+		return
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        echo usage: notifier TYPE TIME_ELAPSED 1>&2
+        return 1
+    fi
+
+    zstyle -s ':notify:' plugin-dir plugin_dir
+    source "$plugin_dir"/lib
+
+    type="$1"
+    time_elapsed="$(format-time "$2")"
+    message=$(<&0)
+
+    # zstyle -s ':notify:' expire-time expire_time
+
+    title=$(notification-title "$type" time_elapsed "$time_elapsed")
+
+    # notify-send -a "${=app_name}" -t $expire_time ${=icon_option} "$title" -- "$message"
+    # notify-send -a "${=app_name}" -t $expire_time ${=icon_option} "$title" -- "$message"
+	printf "\x1b]99;i=1:d=0:o=unfocused;$title\x1b\\"
+	printf "\x1b]99;i=1:d=1:p=body:o=unfocused;$message\x1b\\"
+}
+zstyle ':notify:*' notifier kitty-notify
+# }}}
 
 # keybinding for sudo plugin (I didn't like the default)
 bindkey "\e-" sudo-command-line
@@ -547,3 +571,7 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 # Created by `pipx` on 2023-05-01 03:45:52
 export PATH="$PATH:$HOME/.local/bin"
+
+if [[ "$PROFILE_STARTUP" == true ]]; then
+	zprof
+fi

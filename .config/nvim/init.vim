@@ -15,6 +15,10 @@ color PaperColor
 " colorscheme catppuccin-mocha
 
 lua require('init')
+" color tokyonight-night
+color tex_colors
+hi Normal guibg=none guifg=e0e0e0
+" hi Comment guifg=#707090 "tokyonight
 
 " let g:pymode_python = 'python3'
 
@@ -38,17 +42,11 @@ let g:pandoc#command#custom_open = 'evince'
 " let g:AutoPairsMapCh = 0
 " let g:AutoPairsShortcutBackInsert='<M-v>'
 
-" incsearch.vim
-"map /  <Plug>(incsearch-forward)
-"map ?  <Plug>(incsearch-backward)
-"map g/ <Plug>(incsearch-stay)
-
-
 "lua require('texlab')
 "lua require('tabout').setup{
 "            \    tabkey = '<C-j>',
 "            \    backwards_tabkey = '<C-;>',
-"            \    act_as_tab = false,
+"            \    act_as_tab = false,\frac{1}{2}
 "            \    act_as_shift_tab = false,
 "            \    completion = false,
 "            \    ignore_beggining = true,
@@ -66,39 +64,11 @@ let g:pandoc#command#custom_open = 'evince'
 " set signcolumn=no
 
 " UltiSnips {{{
-" Trigger configuration. Do not use 'tab' if you use https://github.com/Valloric/YouCompleteMe.
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<tab>"
-let g:UltiSnipsJumpBackwardTrigger="<c-j>"
-
-let g:UltiSnipsEditSplit="tabdo"
-
-"autocmd BufLeave * call UltiSnips#LeavingBuffer() " fixes crash when doing gt inside snippet
-
-"inoremap <silent><expr> <TAB>
-      "\ pumvisible() ? coc#_select_confirm() :
-     "\ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
-      "\ <SID>check_back_space() ? "\<TAB>" :
-      "\ coc#refresh()
-
-"function! s:check_back_space() abort
-    "let col = col('.') - 1
-    "return !col || getline('.')[col - 1]  =~# '\s'
-"endfunction
-
-"let g:coc_snippet_next = '<tab>'
+let g:UltiSnipsExpandOrJumpTrigger = "<tab>"
 " }}}
 
 " vimtex
 so ~/.config/nvim/tex.vim
-
-" auto-pairs {{{
-"let g:autopairs_center_line = 0
-"let g:AutoPairsBackInsert = "<M-V>"
-""let g:AutoPairs = {'(':')', '[':']', '{':'}','"':'"', '`':'`', '$':'$'}
-"au FileType tex let b:AutoPairs = AutoPairsDefine({'$' : '$'})
-"}}}
-
 
 " targets.vim {{{
 "let g:targets_seekRanges = 'cc cr cb cB lc ac Ac lr lb ar ab lB Ar aB Ab AB'
@@ -118,7 +88,8 @@ set clipboard=unnamed " use system clipboard
 
 set undofile " save undo history
 
-set so=2 " show 2 lines before/after cursor
+set so=4 " show 4 lines before/after cursor
+so ~/.config/nvim/scrolloff.vim
 
 set showcmd " show commands typed in normal mode
 set lazyredraw " don't redraw during macro execution
@@ -144,10 +115,13 @@ set nrformats=alpha,hex,bin
 " linenumbers
 set number
 set relativenumber
-autocmd BufLeave * : if &nu | setlocal norelativenumber | endif
-autocmd BufEnter * : if &nu | setlocal relativenumber | endif
-autocmd FocusLost * : if &nu | setlocal norelativenumber | endif
-autocmd FocusGained * : if &nu | setlocal relativenumber | endif
+augroup line_numbers
+    autocmd BufLeave * : if &nu | setlocal norelativenumber | endif
+    autocmd BufEnter * : if &nu | setlocal relativenumber | endif
+    autocmd FocusLost * : if &nu | setlocal norelativenumber | endif
+    autocmd FocusGained * : if &nu | setlocal relativenumber | endif
+    autocmd CmdwinEnter * setlocal nonumber | setlocal nornu
+augroup END
 
 "" line wrapping
 " breakindent can make insert mode slow
@@ -157,35 +131,44 @@ set lbr " word-wrap does not split words
 " messages
 set shortmess-=F " show file info when opening
 set shortmess-=T " don't truncate messages
-
 " show warning when search wraps
 set shortmess+=S " this disables the match counter :/
 
 set modelineexpr
+
+" use treesitter for folding
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
+" set nofoldenable                     " Disable folding at startup.
+set foldlevel=20
+
+" don't continue comments when hitting o
+" https://superuser.com/questions/271023/can-i-disable-continuation-of-comments-to-the-next-line-in-vim
+au BufWinEnter * set formatoptions-=o
 
 " }}}
 
 " TODO something for folding
 
 " https://vi.stackexchange.com/questions/18310/keep-relative-cursor-position-after-indenting-with {{{
-func! Indent(ind)
-    if &sol
-        set nostartofline
-    endif
-    let vcol = virtcol('.')
-    if a:ind
-        norm! >>
-        exe "norm!". (vcol + shiftwidth()) . '|'
-    else
-        norm! <<
-        exe "norm!". (vcol - shiftwidth()) . '|'
-    endif
-endfunc
+" func! Indent(ind)
+"     if &sol
+"         set nostartofline
+"     endif
+"     let vcol = virtcol('.')
+"     if a:ind
+"         norm! >>
+"         exe "norm!". (vcol + shiftwidth()) . '|'
+"     else
+"         norm! <<
+"         exe "norm!". (vcol - shiftwidth()) . '|'
+"     endif
+" endfunc
 
-nnoremap >> :call Indent(1)<cr>
-nnoremap << :call Indent(0)<cr>
+" nnoremap >> <cmd>call Indent(1)<cr>
+" nnoremap << <cmd>call Indent(0)<cr>
 " Shift + Tab deindents line
-imap <S-Tab> <C-\><C-o><<
+inoremap <S-Tab> <cmd>normal <<<CR>
 
 " }}}
 
@@ -198,24 +181,39 @@ inoremap <c-u> <c-g>u<c-u>
 inoremap <c-w> <c-g>u<c-w>
 " make Ctrl+R break undo sequence
 inoremap <C-R> <C-G>u<C-R>
-" Ctrl+R twice to paste default buffer, Ctrl+R-Ctrl+E to paste 0-buffer
-inoremap <C-R><C-R> <C-R>"
-inoremap <C-R><C-T> <C-R>*
+" Ctrl+R twice to paste default buffer, Ctrl+R-Ctrl+E to paste
+" system-clipboard
+" inoremap <C-R><C-R> <C-R>"
+inoremap <C-R><C-R> <C-R>*
 inoremap <C-R><C-E> <C-R>+
 " ctrl+L in insert mode to correct last spelling mistake
-inoremap <C-l> <C-o>:set spell<CR><c-g>u<Esc>[s1z=`]a<c-g>u
+inoremap <C-l> <cmd>set spell<CR><c-g>u<Esc>[s1z=`]a<c-g>u
 " press '\h' to highlight search results
-map <leader>h :set hlsearch!<cr>
+nnoremap <leader>h <cmd>set hlsearch!<cr>
 " press '\l' to show line Numbers, '\rl' to show relative line numbers
-map <leader>l :set nu!<cr>
-map <leader>r :set rnu!<cr>
+" map <leader>l <cmd>set nu!<cr>
+nnoremap <leader>l <cmd>call ToggleLines()<CR>
+function! ToggleLines()
+    if &nu || &rnu
+        set nonu
+        set nornu
+        set signcolumn=no
+    else
+        set nu
+        set rnu
+        set signcolumn=number
+    end
+endfunction
+nnoremap <leader>r <cmd>set rnu!<cr>
 " <leader>8 / 9 / 0 for 80 / 90 / 100 character line
-map <leader>8 :set colorcolumn=80<cr>
-map <leader>9 :set colorcolumn=90<cr>
-map <leader>0 :set colorcolumn=100<cr>
-map <leader>1 :set colorcolumn=<cr>
+nnoremap <leader>8 <cmd>set colorcolumn=80<cr>
+nnoremap <leader>9 <cmd>set colorcolumn=90<cr>
+nnoremap <leader>0 <cmd>set colorcolumn=100<cr>
+nnoremap <leader>- <cmd>set colorcolumn=<cr>
+" double-click opens folds
+nnoremap <silent> <expr> <2-LeftMouse> col('.') == 1 ? 'za' : ((foldclosed(line('.')) == -1) ? '<2-LeftMouse>' : 'zo')
 " press '\m' to enable folding by markers
-map <leader>m :set foldmethod=marker<CR>
+nnoremap <leader>m <cmd>set foldmethod=marker<CR>
 " press '\f' to show foldcolumn
 " function! ToggleFoldcolumn()
 "     if &foldcolumn
@@ -229,28 +227,31 @@ map <leader>m :set foldmethod=marker<CR>
 nnoremap <M-g> lm`b~``h
 inoremap <M-g> <Right><C-\><C-o>m`<C-o>b<C-o>~<C-\><C-o>``<Left>
 " C-w deletes previous WORD in insert mode
-inoremap <C-w> <C-\><C-o>"zdB
-" C-Backspace delete previous word, C-Del word after cursor
-inoremap <C-BS> <C-\><C-o>"zdb
+inoremap <C-w> <C-\><C-o>"_dB
+" C-Backspace deletes previous word, C-Del word after cursor
+inoremap <C-BS> <C-w>
 cnoremap <C-BS> <C-w>
-inoremap <C-h> <C-\><C-o>"zdb
+inoremap <C-h> <C-w>
 cnoremap <C-h> <C-w>
-inoremap <C-Del> X<Left><C-o>"zde
+inoremap <C-Del> X<Left><C-o>"_de
+" inoremap <C-Del> <cmd>normal "_de<CR>
 " ctrl-d as alias for del
 inoremap <C-D> <del>
 " C-a and C-e for jumping to start/end of line (like bash)
-inoremap <C-a> <C-o>^
-inoremap <C-e> <C-o>$
+inoremap <C-a> <cmd>normal! ^<CR>
+inoremap <C-e> <end>
 cnoremap <C-a> <home>
 cnoremap <C-e> <end>
 " Alt/C + b/f for word/character movement (like bash/emacs)
 "inoremap <C-f> <Right>
 "inoremap <C-b> <Left>
-inoremap <M-f> <C-\><C-o>e<Right>
-inoremap <M-b> <C-\><C-o>b
+inoremap <M-f> <cmd>normal! w<CR>
+inoremap <M-b> <cmd>normal! b<CR>
 " Ctrl + hjkl to move in insert and command mode
-inoremap <M-j> <C-o>gj
-inoremap <M-k> <C-o>gk
+" inoremap <M-j> <cmd>normal! gj<CR>
+inoremap <M-j> <C-\><C-o>gj
+inoremap <M-k> <C-\><C-o>gk
+" inoremap <M-k> <cmd>normal! gk<CR>
 inoremap <M-h> <Left>
 inoremap <M-l> <Right>
 cnoremap <M-h> <Left>
@@ -268,8 +269,8 @@ cnoremap <M-b> <S-Left>
 cnoremap <M-f> <S-Right>
 cnoremap <C-D> <del>
 " C-s to save
-inoremap <C-s> <C-o>:update<CR>
-nnoremap <C-s> :update<CR>
+inoremap <C-s> <cmd> update<CR>
+nnoremap <C-s> <cmd>update<CR>
 " Up/Down/PageUp/PageDown etc. in command mode like in zsh
 cnoremap <C-p> <PageUp>
 cnoremap <C-n> <PageDown>
@@ -277,34 +278,52 @@ cnoremap <M-p> <Up>
 cnoremap <M-n> <Down>
 " <C-.> for quick insertion of %:h (directory of the current file)
 cnoremap <C-.> %:h
+
 " Spacebar inserts space in normal mode too
 "nnoremap <Space> i <Esc>l
 " nmap <space> i<space><esc>l
+
 "split navigations
 nnoremap <C-J> <C-W><C-J>
 nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
+"==============================================
+"               cool splitting
+"==============================================
+" split automatically if window doesn't exist
+function! WinMove(key)
+  let t:curwin = winnr()
+  exec "wincmd ".a:key
+  if (t:curwin == winnr()) "we haven't moved
+    if (match(a:key,'[jk]')+1) "we want to go up/down
+      wincmd s
+    elseif (match(a:key,'[hl]')+1) "we want to go left/right
+      wincmd v
+    endif
+    exec "wincmd ".a:key
+  endif
+endfunction
+
+"remap our split keys
+map <C-w><C-h> :call WinMove('h')<cr>
+map <C-w><C-k> :call WinMove('k')<cr>
+map <C-w><C-l> :call WinMove('l')<cr>
+map <C-w><C-j> :call WinMove('j')<cr>
 
 " C-w C-] opens in new tab instead of split
 nnoremap <C-W><C-]> <C-W><C-]><C-W>T
 
-nnoremap <C-/> :noh<CR>
+nnoremap <C-/> <cmd>noh<CR>
 " 'g/' to search for selected text in visual mode
 xnoremap g/ "zy/<C-R>z<CR>
 " gy to copy the whole buffer into the Ctrl+C clipboard
 nnoremap gy gg"+yG``
 
-" " C-T to open Telescope file picker in normal mode
-" nnoremap <C-T> <cmd>Telescope find_files<CR>
-" nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-" nnoremap <leader>fb <cmd>Telescope buffers<cr>
-" nnoremap <leader>fh <cmd>Telescope help_tags<cr>
-
 " Don't clutter unnamed register with one-character deletes
 "nnoremap x "-x "disable this because I *do* like doing xp
 " vnoremap <c-d> "zx
-vnoremap x "zx
+vnoremap x "-x
 nnoremap <Del> "-x
 
 " yp to quickly duplicate current line
@@ -312,7 +331,7 @@ nnoremap yp yyp
 
 " Shift-enter does the same as o but w/o changing mode
 nmap <S-CR> o<ESC>
-imap <S-CR> <C-\><C-o>o
+imap <S-CR> <cmd> normal o
 
 " Ctrl+Shift+Y in insert mode is equivalent to Ctrl+Y five times
 imap <C-S-Y> <C-Y><C-Y><C-Y><C-Y><C-Y>
@@ -345,10 +364,10 @@ nnoremap gO O.<BS><ESC>
     "call setline('.', name . ' = ')
     "exec "normal '[d']O\<Esc>p"
 "endfunction
-"nnoremap <silent> \e :set opfunc=Extract<cr>g@
+"nnoremap <silent> \e <cmd>set opfunc=Extract<cr>g@
 
-nnoremap <f5> :set autochdir<bar>:w<bar>make %<cr>
-imap <f5> <C-o>:w<bar>make<cr>
+nnoremap <f5> <cmd>set autochdir\|:w\|Make<cr>
+" imap <f5> <C-o>:w\|make<cr>
 
 nnoremap <F3> :%s//g<Left><Left>
 inoremap <F3> <Esc>:%s//g<Left><Left>
@@ -358,16 +377,15 @@ nnoremap <M-/> /\c<left><left>
 
 " <C-;> as a more easily repeatable alternative to g;
 nnoremap <C-;> g;
-inoremap <C-;> <C-\><C-o>g;
+inoremap <C-;> <cmd> normal g;<CR>
 
 " Alt-backspace to undo in insert mode
 inoremap <A-BS> <C-o>u
-snoremap <A-BS> <C-o>u
+snoremap <A-BS> <cmd>undo<CR><esc>a
 
 " gs as alias for ys (vim-surround)
 nmap gs ys
 nmap gss yss
-
 " AltGr + s for surrounding
 nmap ß ys
 nmap ßß yss
@@ -376,30 +394,40 @@ nmap ßß yss
 nnoremap ¶ :lua 
 
 " QQ to leave vim
-nnoremap QQ :qa<enter>
+nnoremap QQ <cmd>qa<CR>
 
 " Alt-C to copy current filename to clipboard
-nnoremap <M-c> :let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
-inoremap <M-c> <C-o>:let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
+nnoremap <M-c> <cmd>let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
+inoremap <M-c> <cmd>let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 
-nnoremap <expr> <CR> buffer_name() == '[Command Line]' ? '<CR>' : 'ciw'
+nnoremap <expr> <CR> (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"_ciw' : '<CR>'
 
 " select all
 " nnoremap <leader>a gg<S-V>G
 
 " copy to ctrl-c system clipboard
 xnoremap <leader>y "+y
-xnoremap  "+y
-onoremap  y
+xnoremap <expr>  (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"+y' : ''
+nnoremap <expr>  (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"+' : ''
 
-nnoremap <leader>p <cmd>Telescope register
+" open github files, not html views when using gf on a github link
+" currently not working
+let GITHUB_RE = 'https://github\.com/\(\w\|-\)*/\(\w\|-\)*/blob/.*'
+let GITLAB_RE = 'https://gitlab\..*\.org/\(\w\|-\)*/\(\w\|-\)*/\(-/\)\?blob/.*'
+nnoremap <expr> gf (matchstr(expand('<cfile>'), GITHUB_RE . '\\|'. GITLAB_RE) != '') ? ':e ' . substitute(expand('<cfile>'), 'blob', 'raw', '') . '<CR>' : 'gf'
+nnoremap <expr> <C-W>gf (matchstr(expand('<cfile>'), GITHUB_RE . '\\|'. GITLAB_RE) != '') ? ':tabe ' . substitute(expand('<cfile>'), 'blob', 'raw', '') . '<CR>' : '<C-W>gf'
 
-" scroll buffer while in command line
-" cnoremap <silent> <ScrollWheelDown> <c-r>=win_execute(win_getid(), "normal! \<lt>c-e>").execute('redraw')<cr>
-cnoremap <silent> <ScrollWheelDown> <c-r>=win_execute(win_getid(), "normal! \<lt>ScrollWheelDown>").execute('redraw')<cr>
-" cnoremap <silent> <ScrollWheelUp>   <c-r>=win_execute(win_getid(), "normal! \<c-y>").execute('redraw')<cr>
-cnoremap <silent> <ScrollWheelUp>   <c-r>=win_execute(win_getid(), "normal! \<lt>ScrollWheelUp>").execute('redraw')<cr>
-cnoremap <silent> <c-y>   <c-r>=win_execute(win_getid(), "normal! \<c-y>").execute('redraw')<cr>
+" gg goes to start of line if already on first line
+nnoremap <expr> gg v:count == 0 && line('.') == 1 ? '0' : 'gg'
+
+" slightly more convenient tab navigation
+nnoremap <leader>1 1gt
+nnoremap <leader>2 2gt
+nnoremap <leader>3 3gt
+nnoremap <leader>4 4gt
+nnoremap <leader>5 5gt
+nnoremap <leader>6 6gt
+nnoremap <leader>7 7gt
 
 " }}}
 
@@ -411,8 +439,8 @@ function! SudaWriteCmd()
     SudaWrite %
     " e
     set noreadonly
-    nnoremap <buffer> <C-S> :SudaWrite % \| set noreadonly<CR>
-    inoremap <buffer> <C-S> <C-o>:SudaWrite % \| set noreadonly<CR>
+    nnoremap <buffer> <C-S> <cmd>SudaWrite % \| set noreadonly<CR>
+    inoremap <buffer> <C-S> <cmd>:SudaWrite % \| set noreadonly<CR>
 endfunction
 " command! WW Lazy load suda.vim | SudaWrite % | e | set noreadonly | nnoremap <buffer> <C-S> :sudawrite % \| e \| set noreadonly<cr> | inoremap <buffer>
 command! WW call SudaWriteCmd()
@@ -421,6 +449,10 @@ command! WW call SudaWriteCmd()
 command! W  w
 command! Wq wq
 command! WQ wq
+cabbrev WQ! wq!
+cabbrev W! w!
+cabbrev QA! qa!
+cabbrev Qa! qa!
 command! Wqa wqa
 command! Qa qa
 command! Q  q
@@ -433,8 +465,17 @@ command! GL Git pull
 command! Gp Git push
 command! GP Git push
 
-command! Rc cd ~/.config/nvim | tabe init.vim | tabe lua/init.lua | tabe lua/plugins/misc.lua
-command! RC cd ~/.config/nvim | tabe init.vim | tabe lua/init.lua | tabe lua/plugins/misc.lua
+function! Rc()
+    cd ~/.config/nvim
+    if &ft == 'tex'
+        tabe vimtex_setup.vim
+    endif
+	tabe lua/init.lua
+	tabe lua/plugins/misc.lua
+	tabe init.vim
+endfunction
+command! Rc call Rc()
+command! RC call Rc()
 
 command! -nargs=? RichPaste call RichPaste('<args>')
 command! -nargs=? RP call RichPaste('<args>')
@@ -456,7 +497,7 @@ function! RichPaste(...)
         end
     end
     let _shellredir = &shellredir
-    :set shellredir=>
+    set shellredir=>
     exe "read! if encoded=`xclip -selection clipboard -o -t text/html` 2>/dev/null; then echo $encoded | pandoc --wrap=none -f HTML -t ". target . "; else xclip -o; fi"
     let &shellredir=_shellredir
 endfunction
@@ -498,18 +539,24 @@ autocmd DirChanged * call chansend(v:stderr, printf("\033]7;file://%s\033\\", v:
 
 " customize cursor, highlighting etc {{{
 set cul
-" nnoremap <leader>v :set cul!<cr>
-hi CursorLine guibg=#101010
-hi LineNr guifg=#909090 guibg=#202020
+" nnoremap <leader>v <cmd>set cul!<cr>
+hi CursorLine guibg=#151515
+hi Cursor guifg=none guibg=none
+hi LineNr guifg=#9a9a9a guibg=#202020
+hi CursorLineNr guibg=#200040
 augroup cursor
     au!
-    autocmd InsertEnter * highlight  CursorLine ctermbg=232
-    autocmd InsertEnter * highlight  CursorLine guibg=#202020
-    autocmd InsertLeave * highlight  CursorLine ctermbg=234
-    autocmd InsertLeave * highlight  CursorLine guibg=#101010
+    autocmd InsertEnter * highlight CursorLine ctermbg=232
+    autocmd InsertEnter * highlight CursorLine guibg=#202020
+    autocmd InsertLeave * highlight CursorLine ctermbg=234
+    autocmd InsertLeave * highlight CursorLine guibg=#151515
 augroup END
 
-set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait300-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175 " from :h guicursor
+set guicursor=n-v-c:block,i-ci-ve:ver25,r-cr:hor20,o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor,sm:block-blinkwait175-blinkoff150-blinkon175 " from :h guicursor
+" }}}
+
+
+" highlighting {{{
 "hi Search ctermfg=15
 "hi IncSearch guibg=#30e060
 hi WarningMsg guifg=white guibg=red gui=bold "to make search wrapping more obvious
@@ -520,13 +567,15 @@ hi SpellRare cterm=undercurl ctermbg=none guisp=magenta
 
 hi Conceal ctermfg=lightblue ctermbg=none guibg=NONE
 hi Search ctermfg=0 ctermbg=11 guifg=#ffffe0 guibg=#4090d0
-hi Cursor guibg=#ffffff
+hi CurSearch guifg=#ffffe0 guibg=#c04010
 
 hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
+" hi Visual guibg=#254895 gui=none " PaperColor
+hi Visual guibg=#274790 gui=none
+hi NvimSurroundHighlight gui=inverse
 
-" hi Cursor guifg=white
-
-hi pandocStrikeout gui=strikethrough
+hi LspDiagnosticsDefaultHint guibg=#303030 guifg=#c77000
+" hi pandocStrikeout gui=strikethrough " doesn't work :(
 " }}}
 
 " remember stuff across sessions {{{
@@ -553,7 +602,7 @@ augroup HlYank
 augroup END
 " }}}
 
- autocmd BufWinEnter * if !exists('b:has_been_entered')|let b:has_been_entered = 1|silent! .foldopen|endif
+autocmd BufWinEnter * if !exists('b:has_been_entered')|let b:has_been_entered = 1|silent! .foldopen|endif
 
 " filetype specific settings {{{
 
@@ -562,8 +611,13 @@ augroup END
     "\ })
 " }}}
 
-"profile start output.log
-"profile func *
+
+" -----------------------------------------------------------------------
+" utility functions
+" -----------------------------------------------------------------------
+function! ScrollEnd(id)
+    call search('^.', 'b')
+endfunction
 
 
 " -----------------------------------------------------------------------

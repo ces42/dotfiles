@@ -30,6 +30,8 @@ let g:vimtex_quickfix_mode = 2
 let g:vimtex_quickfix_autoclose_after_keystrokes = 3
 let g:tex_flavor = 'latex'
 let g:vimtex_echo_verbose_input = 0
+let g:vimtex_syntax_conceal_disable = 1
+" let g:vimtex_syntax_match_unicode = 1 " this is a little bit slow
 
 set fdm=marker
 "let g:vimtex_fold_enabled = 1
@@ -134,9 +136,14 @@ let g:vimtex_delim_list = { 'delim_math' : {
             \    ]
             \  }
             \}
-" let g:vimtex_syntax_conceal = {'accents': 0, 'cites': 0, 'fancy': 0, 'greek':0, 'math_bounds':1, 'math_delimiters':0, 'math_fracs':0, 'math_super_sub':0, 'math_symbols':0, 'sections':0, 'styles':0, 'spacing':0}
+
+
 
 setlocal keywordprg=texdoc
+
+syntax match texMathDelim "⟨"
+syntax match texMathDelim "⟩"
+
 
 " --------------------------------------------------------------------------------
 " Commands for read/write with unicode substitution
@@ -212,9 +219,7 @@ function! TexSetupBuffer()
 
     " https://castel.dev/post/lecture-notes-1
     setlocal spell
-    set spelllang=en_us
-    set iskeyword+=$
-    set iskeyword+=\
+    setlocal spelllang=en_us
     " ctrl+L in insert mode to correct last spelling mistake
     inoremap <buffer> <C-l> <c-g>u<Esc>[s1z=`]a<c-g>u
     inoremap <buffer> <C-k> <C-R>=UltiSnips#ExpandSnippetOrJump()<CR>
@@ -315,10 +320,8 @@ EOF
     nmap <buffer> <leader>o cicoperatorname{<C-R>"}<ESC>
     nmap <buffer> ysm ysi$
     setlocal matchpairs=(:) " vimtex already highlights [] and {} (much faster than matchpairs or matchpairs.nvim)
-    setlocal iskeyword=@,48-57,192-255
-
-    syntax match texMathDelim "⟨"
-    syntax match texMathDelim "⟩"
+    setlocal iskeyword=@,48-57,\\,192-255
+    " setlocal iskeyword+=$
 
     if g:UNICODE_ENABLED
         py3 from translate_tex_chr import tr_write_buffer, tr_write_file, tr_change_buffer
@@ -330,4 +333,7 @@ EOF
 
     call vimtex#syntax#core#new_env({'name': 'cd', 'starred': v:true, 'math': v:true})
     " call vimtex#syntax#core#new_region_math('cd*')
+
+    syntax region texMathZoneTI matchgroup=texMathDelimZoneTI start="\$" skip="\\\\\|\\\$" end="\$" contains=@texClusterMath nextgroup=texMathTextAfter concealends
+    setlocal conceallevel=1
 endfunction

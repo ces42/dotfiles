@@ -63,6 +63,7 @@ WantedBy=default.target
 
 # Pandoc
 - needs perl modules that get install w/ `_ cpan install Pandoc::Elements`
+- for 23.10 I also needed to install `IPC::Run3`
 - However the test for these fail (I vaguely remember the fail to be a "false negative"?) so we need `_ cpan install -f Pandoc::Elements`
 - also needs `_ pip3 install pandoc-secnos`
 

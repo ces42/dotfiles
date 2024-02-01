@@ -122,7 +122,7 @@ source "$ZSH/custom/themes/$ZSH_THEME.zsh-theme"
 
 # zsh-autosuggestions {{{
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1 #https://github.com/zsh-users/zsh-autosuggestions#disabling-automatic-widget-re-binding
-_BORING_COMMANDS=("^ls$" "^cd$" "^ " "^histdb" "^top$" "^htop$" '^\.\.+$' '^~$' '^exit$' '^z ')
+_BORING_COMMANDS=("^ls?$" "^(cd|~)$" "^ " '^\.\.+$' "^h?top$" '^exit$' '^z ' '^(_ |sudo )? (pm-suspend|reboot)$' "^histdb")
 
 _zsh_autosuggest_strategy_histdb_top() {
 	local query="
@@ -548,18 +548,24 @@ eval $_mod_trap_source
 # zle -N del-prompt-accept-line
 # bindkey "^M" del-prompt-accept-line
 
-# This speeds up pasting w/ autosuggest
+# This speeds up pasting w/ autosuggest {{{
 # https://github.com/zsh-users/zsh-autosuggestions/issues/238
-pasteinit() {
-    OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
-    zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
-}
+# pasteinit() {
+#     OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
+#     zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
+# }
 
-pastefinish() {
-    zle -N self-insert $OLD_SELF_INSERT
-}
-zstyle :bracketed-paste-magic paste-init pasteinit
-zstyle :bracketed-paste-magic paste-finish pastefinish
+# pastefinish() {
+#     zle -N self-insert $OLD_SELF_INSERT
+# }
+# zstyle :bracketed-paste-magic paste-init pasteinit
+# zstyle :bracketed-paste-magic paste-finish pastefinish
+
+# this one looks simpler and the above might negatively affect performance
+zstyle ':bracketed-paste-magic' active-widgets '.self-*'
+
+#}}}
+
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

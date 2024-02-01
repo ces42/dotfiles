@@ -19,7 +19,7 @@ FZF_CTRL_T_OPTS='--reverse --tiebreak=length --scheme=path --info inline'\
 ' --bind "alt-f:change-prompt(F> )+reload('${(q)FZF_CTRL_T_COMMAND}')"'\
 ' --bind "f5:reload('${(q)FZF_CTRL_T_COMMAND}')"'\
 ' --preview-window "right:50%:hidden"'\
-' --bind '"'"'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | map q :qa!<CR> |write! $tmp" >&9; mv -nT {} "$(cat $tmp)")'"'"\
+' --bind '"'"'f2:execute(tmp=$(mktemp); echo {} | env VI_PAGER=1 vi -c "set nonu nornu | map q :qa!<CR> |write! $tmp" >&9; mv -nT {} "$(cat $tmp)")'"'"\
 
 FZF_ALT_C_OPTS='--reverse --tiebreak=length --scheme=path --info inline'\
 ' --preview "ls -lah --color=always {}" --bind "ctrl-y:execute-silent(echo -n {} | xclip -i)"'\

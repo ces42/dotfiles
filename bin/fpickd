@@ -74,7 +74,7 @@ while true; do
 			--bind "ctrl-c:execute-silent(echo -n {} | sed '$SEDBACK' | xclip -i -selection clipboard)" \
 			--bind "ctrl-alt-n:page-down,ctrl-alt-p:page-up" \
 			--bind "f3:toggle-preview,ctrl-h:backward-kill-word,ctrl-t:accept" \
-			--bind 'f2:execute(tmp=$(mktemp); echo {} | vi -c "let g:pager_mode = 1 | set nonu nornu | nnoremap q :qa!<CR> | write! $tmp" >&3; mv -nT "$(echo {} | sed "'$SEDBACK'")" "$(sed "'$SEDBACK'" < $tmp)")+'"reload($find_cmd | sed $SED)" \
+			--bind 'f2:execute(tmp=$(mktemp); echo {} | env VI_PAGER=1 vi -c "set nonu nornu | nnoremap q :qa!<CR> | write! $tmp" >&3; mv -nT "$(echo {} | sed "'$SEDBACK'")" "$(sed "'$SEDBACK'" < $tmp)")+'"reload($find_cmd | sed $SED)" \
 			--bind 'f4:execute-silent(trash "$(echo {} | sed "'$SEDBACK'")")+'"reload($find_cmd | sed $SED)" \
 			--bind "alt-d:change-prompt(D> )+reload($find_cmd --type d | sed $SED)" \
 			--bind "alt-f:change-prompt(F> )+reload($find_cmd --type f | sed $SED)"\
@@ -142,13 +142,13 @@ while true; do
 			xdotool mousemove --sync -w "$xid" 1 1 mousedown 1 mousemove $X $Y
 		done <<< "$files"
 	else
-		#for_vim=""
+		for_vim=""
 		# for f in "$files"; do
 		while IFS= read -r f ; do
-			#if [[ "$f" =~ .*\.(txt|md|log|py|tex|cpp|c|h|xml|html|sh|zsh|bib) ]]; then
-			#	for_vim="$for_vim $f"
-			#	continue
-			#fi
+			if [[ "$f" =~ .*\.(txt|md|log|py|tex|cpp|c|h|xml|html|sh|zsh|bib) ]]; then
+				for_vim="$for_vim $f"
+				continue
+			fi
 			# echo 'file: '$f
 			if [ -d "$f" ]; then
 				if [[ "$f" =~ (Music|Documents/audiobooks)/.* ]]; then
@@ -164,9 +164,9 @@ while true; do
 				detach xdg-open "$f"
 			fi
 		done <<< "$files"
-		#if [ -n "$for_vim" ]; then
-		#	eval detach kitty -e "vi -p $for_vim"
-		#fi
+		if [ -n "$for_vim" ]; then
+			eval detach kitty-vim -p $for_vim
+		fi
 	fi
 
 	# xdotool windowmap $WID &

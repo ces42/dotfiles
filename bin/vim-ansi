@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cat - | awk '/^$/ {nlstack=nlstack "\n";next;} {printf "%s",nlstack; nlstack=""; print;}' > /tmp/buff-$$
-vim "$@" -c "term tail -n 200 /tmp/buff-$$" -c ':only' -c "norm Gdj"< /dev/tty
+VI_PAGER=1 /usr/local/bin/nvim "$@" -c "term tail -n 200 /tmp/buff-$$" -c ':only' -c "nnoremap q :q!<CR>" -c  "function ScrollEnd() | call search('^.', 'b') | endfunction | timer_start(0, 'ScollEnd')" < /dev/tty

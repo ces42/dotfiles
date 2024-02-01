@@ -12,9 +12,9 @@ switch_to_cursor_win() {
 	_do_focusing
 }
 
-rm /run/user/1000/fusuma_old_win && mkfifo /run/user/1000/fusuma_old_win
-rm /run/user/1000/fusuma_active_win_id && mkfifo /run/user/1000/fusuma_active_win_id
-rm /run/user/1000/fusuma_active_win_class && mkfifo /run/user/1000/fusuma_active_win_class
+# rm /run/user/1000/fusuma_old_win && mkfifo /run/user/1000/fusuma_old_win
+# rm /run/user/1000/fusuma_active_win_id && mkfifo /run/user/1000/fusuma_active_win_id
+# rm /run/user/1000/fusuma_active_win_class && mkfifo /run/user/1000/fusuma_active_win_class
 
 _get_cursor_win_fast() { # WIP
 	# currently not working correctly (9.5.23)
@@ -30,7 +30,7 @@ _get_cursor_win_fast() { # WIP
 	active_win_class=$(xprop -id $active_win_id WM_CLASS | cut -d \" -f 4)
 }
 
-_get_cursor_win() {
+_get_cursor_win_xdotool() {
 	old_win=$(xdotool getactivewindow)
 	if [ $? -gt 0 ]; then
 		old_win=0
@@ -48,6 +48,29 @@ _get_cursor_win() {
 	# echo "switch to: active_win_id=$active_win_id"
 	active_win_class=$(xprop -id $active_win_id WM_CLASS | cut -d \" -f 4)
 }
+
+_get_cursor_win() {
+	win_info=$(tail -n1 /run/user/1000/keyd.fifo2)
+	old_win=$(echo "$win_info" | cut -f 1)
+	old_win_class=$(echo "$win_info" | cut -f 2)
+	if [ $? -gt 0 ]; then
+		old_win=0
+		active_win_id=0
+		active_win_class='GNOME'
+		return
+	fi
+	# if active window is guake, don't care about cursor position
+	if [ "$old_win_class" = "Guake" ]; then
+		active_win_id=$old_win
+		active_win_class="Guake"
+	else
+		active_win_id=$(xdotool getmouselocation --shell | sed -n 's/WI....=\(.*\)/\1/p')
+	fi
+	# echo "switch to: old_win=$old_win"
+	# echo "switch to: active_win_id=$active_win_id"
+	active_win_class=$(xprop -id $active_win_id WM_CLASS | cut -d \" -f 4)
+}
+
 
 _do_focusing() {
 	if [ "$old_win" != "$active_win_id" ]; then
@@ -109,6 +132,7 @@ three_finger_end() {
 	fi
 	switch_win_back
 	# wmctrl -iR "$(cat /var/run/user/$(id -u)/fusuma-old-win)"
+	evince_switched=
 }
 
 three_finger_left() {
@@ -132,7 +156,7 @@ three_finger_left() {
 			ydotool key --key-delay 0 29:1 109:1 109:0 29:0 # ctrl and PgDown
 			;;
 	esac
-	evince_switched=
+	# evince_switched=
 }
 
 
@@ -161,7 +185,7 @@ three_finger_right() {
 			ydotool key --key-delay 0 29:1 104:1 104:0 29:0 # ctrl and PgUp
 			;;
 	esac
-	evince_switched=
+	# evince_switched=
 }
 
 three_finger_up() {
@@ -193,7 +217,7 @@ three_finger_up() {
 			#     ydotool key --key-delay 0 29:1 62:1 62:0 29:0
 			# fi
 			case "$winname" in
-			  "vi:"*)
+			  "vi:"*|"Clicked command output"*)
 				# xte 'keydown Control_L' 'keydown Alt_L' 'key Next' 'keyup Alt_L' 'keyup Control_L' 
 				ydotool key --key-delay 0 1:1 1:0 # esc
 				sleep 0.001
@@ -297,7 +321,7 @@ four_finger_end() {
 	# fi
 	if [ "$wm_mode_tiling" ]; then
 		ydotool key --key-delay 0 28:1 28:0
-	elif [ "$hold_wm_mode"]; then
+	elif [ "$hold_wm_mode" ]; then
 		sleep 0.05
 		switch_win_back
 	fi
@@ -320,7 +344,7 @@ four_finger_left() {
 		has_switched_wins=1
 	else
 		if [ $has_switched_wins ]; then
-			ydotool key --key-delay 0 106:1 106:0 # left
+			ydotool key --key-delay 0 106:1 106:0 # right
 		else
 			ydotool key --key-delay 0 15:1 15:0
 		fi
@@ -381,9 +405,7 @@ pinch_two_in() {
 	# switch_to_cursor_win
 	_get_cursor_win
 	if [ "$active_win_class" = "Evince" ] || [ "$active_win_class" = "firefox" ]; then
-		if [ -n "$(xprop -id $active_win_id WM_NAME | grep -iP "fmovies|youtube|odysee\.com|tagesschau|prime video|Picture-in-Picture")" ] && xprop -id $active_win_id | grep "^_NET_WM_STATE(ATOM) =" | grep "_NET_WM_STATE_FULLSCREEN"; then
-			ydotool key --key-delay 0 33:1 33:0
-		fi
+		ydotool key --key-delay 0 33:1 33:0
 		return
 	fi
 	state=$(xprop -id $active_win_id | grep "^_NET_WM_STATE(ATOM) =")

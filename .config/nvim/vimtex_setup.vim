@@ -20,7 +20,7 @@ augroup vimtex_setup
     au BufReadPost *.tex call TexSetupBuffer()
     "au BufReadPost *.tex lua 
     " au User VimtexEventInitPre call VimtexPreSetup()
-    au User VimtexEventInitPost call VimtexPostSetup()
+    " au User VimtexEventInitPost call VimtexPostSetup()
 augroup END
 
 "let g:vimtex_latexmk_progname='nvr'
@@ -186,9 +186,9 @@ function! Tex_tr_BufWrite()
     set nomodified
 endfunction
 
-function! VimtexPostSetup()
-    lua require('tex_tools')
-endfunction
+" function! VimtexPostSetup()
+"     lua require('tex_tools')
+" endfunction
 
 au BufReadPost *.tex lua require('vimtex').imaps_setup()
 
@@ -214,8 +214,14 @@ au! BufAdd *diary.tex :LspStop
 " ------------------------------------------------------------------------------
 
 function! TexSetupBuffer()
-    nnoremap <buffer> <leader>ld :!firefox http://detexify.kirelabs.org/classify.html<CR>
-    nnoremap <buffer> <leader>lf :lua expand_font_macros()<CR>
+    nnoremap <buffer> <leader>ld <cmd>!firefox http://detexify.kirelabs.org/classify.html<CR>
+    nnoremap <buffer> <leader>lf <cmd>lua require('vimtex').expand_font_macros()<CR>
+    iunmap <buffer> ]]
+    inoremap <buffer> <C-]> <plug>(vimtex-delim-close)
+    inoremap <buffer> <expr> <C-CR> vimtex#env#is_inside('align') != [0, 0] ? ' \\<CR>' : '<C-CR>'
+    nnoremap <buffer> <expr> <C-CR> vimtex#env#is_inside('align') != [0, 0] ? 'i \\<CR>' : '<C-CR>'
+    inoremap <buffer> <expr> <S-CR> vimtex#env#is_inside('align') != [0, 0] ? getline('.')[-2:] == '\\' ? '<C-o>o' : '<end> \\<C-o>o' : '<C-o>o'
+    nnoremap <buffer> <expr> <S-CR> vimtex#env#is_inside('align') != [0, 0] ? getline('.')[-2:] == '\\' ? 'o' : 'A \\<C-o>o' : 'o'
 
     " https://castel.dev/post/lecture-notes-1
     setlocal spell
@@ -228,7 +234,10 @@ function! TexSetupBuffer()
 
     let b:_quick_undo_tick = -1
     let b:_quick_undo_pos = [-1, -1]
-    inoremap <buffer> <expr> <BS> (b:_quick_undo_tick == b:changedtick) && (col('.') == b:_quick_undo_pos[1]) && (line('.') == b:_quick_undo_pos[0]) ? '<C-o>u<C-o>u<BS>' : v:lua.MPairs.autopairs_bs(bufnr())
+    function! F()
+        return v:lua.require'nvim-autopairs'.autopairs_bs(bufnr())
+    endfunction
+    inoremap <buffer> <expr> <BS> (b:_quick_undo_tick == b:changedtick && col('.') == b:_quick_undo_pos[1] && line('.') == b:_quick_undo_pos[0]) ? '<C-o>u<C-o>u<BS>' : F()
     "
     " in Kitty I have ctrl+9 mapped to F13 and ctrl+0 mapped to F14
     "imap <buffer> <F13> <C-\><C-O>tsd
@@ -246,8 +255,13 @@ function! TexSetupBuffer()
         norm ts$
         call vimtex#env#change_surrounding('math', 'align')
         norm g%
-        " norm vie
-        " substitue /\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/
+        norm kvie
+        try
+            substitute /\v(:?\=|≤|≥|\\([gl]eq|cong))/\&\1/
+        catch
+            " If we didn't find any equal signs, there still might be arrows
+            substitute /\v\\(to|weakto)/\&\0/
+        endtry
     endfunction
     " nmap <buffer> tsa ts$csealign<CR>g%vie:s/\(=\|≤\|\\leq\|≥\|\\geq\|\\cong\)/\&\1/<CR>
     nmap <buffer> tsa :call Tsa()<CR>
@@ -336,4 +350,15 @@ EOF
 
     syntax region texMathZoneTI matchgroup=texMathDelimZoneTI start="\$" skip="\\\\\|\\\$" end="\$" contains=@texClusterMath nextgroup=texMathTextAfter concealends
     setlocal conceallevel=1
+endfunction
+
+
+function! HighlightMath()
+    hi Normal guifg=#575757
+    hi texRefArg guifg=#575757
+    hi texCmdRef guifg=#575757
+    hi texMathEnvBgnEnd guifg=#575757
+    hi texPartArgTitle guifg=#575757
+    hi texCmd guifg=#575757
+    hi Comment guifg=#404060
 endfunction

@@ -1130,7 +1130,8 @@ endfun
 fun! s:apply_syntax_highlightings()
 
   "if s:themeOpt_transparent_background
-    "exec 'hi Normal' . s:fg_foreground
+    exec 'hi Normal' . s:fg_foreground . s:bg_background
+    " exec 'hi Normal guifg=none guibg=none'
     " Switching between dark & light variant through `set background`
     " NOTE: Handle background switching right after `Normal` group because of
     " God-know-why reason. Not doing this way had caused issue before
@@ -2137,29 +2138,6 @@ fun! s:apply_syntax_highlightings()
 
   " }}}
   
-  " Plugin: VimTex
-  hi texMathZone guifg=#a8e0ff
-  hi texMathOper guifg=#76daf9
-  hi texCmdGreek guifg=#a8b8ff
-  hi texMathSymbol guifg=#50f0ff
-  hi texCmdSymbol guifg=#3bbff7
-  hi texEnvArgname guifg=darkOrange
-  hi texMathEnvArgname guifg=darkOrange
-  "hi texMathDelimZone guifg=#e008d0
-  "hi texMathDelimZone guibg=#50006a guifg=#ffb92e
-  hi texMathDelimZone guifg=#ffa020
-  "hi texMathSuperSub guifg=#e05010
-  hi texMathSuperSub guifg=#d02050
-  hi texDelim guifg=#1af42a
-  " hi texDelim guifg=#ff9060
-  hi texMathDelim guifg=#f7e859
-  "hi texCmd guifg=#b67820
-  hi texCmdEnv guifg=#707870
-  hi texMathCmd guifg=#90d090
-
-  "exec 'hi texMathSub' s:fg_blue
-  "exec 'hi texMathSuper' s:fg_blue
-
   " Plugin: Netrw
   exec 'hi netrwVersion' . s:fg_red
   exec 'hi netrwList' . s:fg_pink

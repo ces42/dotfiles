@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 import re, vim
 
-def read_dict(file):
-    with open(file) as f:
-        for line in f:
-            if not line[:-1] or line.startswith('#'): continue
-            char, tex = line[:-1].split(' ')
-            chr_to_tex[char] = '\\' + tex
-            # HAS_BAR |= (tex == '|')
+# def read_dict(file):
+#     with open(file) as f:
+#         for line in f:
+#             if not line[:-1] or line.startswith('#'): continue
+#             char, tex = line[:-1].split(' ')
+#             chr_to_tex[char] = '\\' + tex
+#             # HAS_BAR |= (tex == '|')
 
 def tr_write(s):
     new = []
@@ -21,8 +21,9 @@ def tr_write(s):
 
 # chr_to_tex = {}
 # read_dict('/home/ca/latex_tools/translate.csv')
-tex_to_chr = vim.lua.require('tr_tex_chr')
-chr_to_tex = {char: '\\' + cmd for cmd, char in tex_to_chr.items()}
+# tex_to_chr = vim.lua.require('tr_tex_chr')
+# chr_to_tex = {char: '\\' + cmd for cmd, char in tex_to_chr.items()}
+chr_to_tex = vim.lua.require('tr_tex_chr').chr_to_tex
 cmp = re.compile(
         '(' +
         # '|'.join(chr(c) + '(?![a-zA-Z])'*v.isalpha() for c, v in chr_to_tex.items())

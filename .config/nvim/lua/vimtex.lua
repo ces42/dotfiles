@@ -42,6 +42,8 @@ local shortcuts = {
     O = '⊗',
     V = '∇',
     A = '∀',
+    E = '∃',
+    ['*'] = '×',
     ['('] = '⊂',
     ['['] = '⊆',
     ['<'] = '⟨',
@@ -86,6 +88,24 @@ function s.imaps_setup()
         --vim.fn['vimtex#imaps#add_map']({lhs = k, rhs = v, wrapper = 'Ensure_math'})
     end
 end
+
+
+function s.expand_font_macros()
+    local onlycaps = {c = 'mathcal', sc = 'mathscr', bb = 'mathbb', s = 'mathsf'}
+    local both = {bf = 'mathbf', f = 'mathfrak'}
+    for k, v in pairs(onlycaps) do
+        vim.api.nvim_command('%s/\\\\' .. k .. '\\(\\u\\)\\a\\@!/\\\\' .. v .. '{\\1}/ge')
+    end
+    for k, v in pairs(both) do
+        vim.api.nvim_command('%s/\\\\' .. k .. '\\(\\a\\)\\a\\@!/\\\\' .. v .. '{\\1}/ge')
+    end
+end
+
+local buffer_to_string = function()
+    local content = vim.api.nvim_buf_get_lines(0, 0, vim.api.nvim_buf_line_count(0), false)
+    return table.concat(content, "\n")
+end
+
 
 return s
 

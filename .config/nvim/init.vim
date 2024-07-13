@@ -11,11 +11,18 @@ set termguicolors
 " ~/.config/nvim/lua/init.lua
 
 set guifont=JuliaMono:h12
-color PaperColor
-" colorscheme catppuccin-mocha
+" color PaperColor
+
+function! IsNormalBuffer()
+    return &buftype != 'nofile' && &buftype != 'quickfix'
+endfunction
+
+" put this here so that firenvim can unmap <ScrollWheelUp>, <ScrollWheelDown>
+so ~/.config/nvim/scrolloff.vim
 
 lua require('init')
 " color tokyonight-night
+colorscheme catppuccin-mocha
 color tex_colors
 hi Normal guibg=none guifg=e0e0e0
 " hi Comment guifg=#707090 "tokyonight
@@ -88,9 +95,6 @@ set clipboard=unnamed " use system clipboard
 
 set undofile " save undo history
 
-set so=4 " show 4 lines before/after cursor
-so ~/.config/nvim/scrolloff.vim
-
 set showcmd " show commands typed in normal mode
 set lazyredraw " don't redraw during macro execution
 
@@ -109,17 +113,14 @@ set inccommand=split "live preview of substitutions
 " set tab width behaviour
 "set shiftwidth=4
 
-" C-A, C-X operates on digits, letters, hex and binary numbers
-set nrformats=alpha,hex,bin
-
 " linenumbers
 set number
 set relativenumber
 augroup line_numbers
-    autocmd BufLeave * : if &nu | setlocal norelativenumber | endif
-    autocmd BufEnter * : if &nu | setlocal relativenumber | endif
-    autocmd FocusLost * : if &nu | setlocal norelativenumber | endif
-    autocmd FocusGained * : if &nu | setlocal relativenumber | endif
+    autocmd BufLeave * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
+    autocmd BufEnter * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
+    autocmd FocusLost * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
+    autocmd FocusGained * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
     autocmd CmdwinEnter * setlocal nonumber | setlocal nornu
 augroup END
 
@@ -132,7 +133,7 @@ set lbr " word-wrap does not split words
 set shortmess-=F " show file info when opening
 set shortmess-=T " don't truncate messages
 " show warning when search wraps
-set shortmess+=S " this disables the match counter :/
+" set shortmess+=S " this disables the match counter :/
 
 set modelineexpr
 
@@ -184,7 +185,10 @@ inoremap <C-R> <C-G>u<C-R>
 " Ctrl+R twice to paste default buffer, Ctrl+R-Ctrl+E to paste
 " system-clipboard
 " inoremap <C-R><C-R> <C-R>"
-inoremap <C-R><C-R> <C-R>*
+"inoremap <C-R><C-R> <C-R>*
+inoremap <C-R><C-R> <C-\><C-o><Plug>(YankyPutAfter)<Right>
+inoremap <c-p> <C-\><C-o><Plug>(YankyPreviousEntry)
+inoremap <c-n> <C-\><C-o><Plug>(YankyNextEntry)
 inoremap <C-R><C-E> <C-R>+
 " ctrl+L in insert mode to correct last spelling mistake
 inoremap <C-l> <cmd>set spell<CR><c-g>u<Esc>[s1z=`]a<c-g>u
@@ -269,8 +273,9 @@ cnoremap <M-b> <S-Left>
 cnoremap <M-f> <S-Right>
 cnoremap <C-D> <del>
 " C-s to save
-inoremap <C-s> <cmd> update<CR>
-nnoremap <C-s> <cmd>update<CR>
+inoremap <C-s> <cmd>update \| lua require('lualine').refresh()<CR>
+nnoremap <C-s> <cmd>update \| lua require('lualine').refresh()<CR>
+vnoremap <C-s> <cmd>update \| lua require('lualine').refresh()<CR>
 " Up/Down/PageUp/PageDown etc. in command mode like in zsh
 cnoremap <C-p> <PageUp>
 cnoremap <C-n> <PageDown>
@@ -319,6 +324,10 @@ nnoremap <C-/> <cmd>noh<CR>
 xnoremap g/ "zy/<C-R>z<CR>
 " gy to copy the whole buffer into the Ctrl+C clipboard
 nnoremap gy gg"+yG``
+" yp to quickly duplicate current line
+nnoremap yp yyp
+" Alt-y twice to do yy but not in linewise mode
+nnoremap <M-y><M-y> ^y$
 
 " Don't clutter unnamed register with one-character deletes
 "nnoremap x "-x "disable this because I *do* like doing xp
@@ -326,12 +335,12 @@ nnoremap gy gg"+yG``
 vnoremap x "-x
 nnoremap <Del> "-x
 
-" yp to quickly duplicate current line
-nnoremap yp yyp
-
 " Shift-enter does the same as o but w/o changing mode
 nmap <S-CR> o<ESC>
-imap <S-CR> <cmd> normal o
+imap <S-CR> <cmd>normal o<CR>
+
+" make & (repeat last subsitute) work in visual mode
+vnoremap & :&&<CR>
 
 " Ctrl+Shift+Y in insert mode is equivalent to Ctrl+Y five times
 imap <C-S-Y> <C-Y><C-Y><C-Y><C-Y><C-Y>
@@ -369,7 +378,8 @@ nnoremap gO O.<BS><ESC>
 nnoremap <f5> <cmd>set autochdir\|:w\|Make<cr>
 " imap <f5> <C-o>:w\|make<cr>
 
-nnoremap <F3> :%s//g<Left><Left>
+nnoremap <F3> :%s//g<Left><Left><C-^>
+vnoremap <expr> <F3> ':s/' .. ((mode()[0] == 'v' \|\| mode()[0] == "\<C-v>") ? '%V' : '') .. '/g<Left><Left><C-^>'
 inoremap <F3> <Esc>:%s//g<Left><Left>
 
 " nnoremap g/ /\c<left><left>
@@ -400,15 +410,16 @@ nnoremap QQ <cmd>qa<CR>
 nnoremap <M-c> <cmd>let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 inoremap <M-c> <cmd>let @+ = substitute(expand('%'), '/home/ca/', '~/', '')<CR>
 
-nnoremap <expr> <CR> (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"_ciw' : '<CR>'
+
+nnoremap <expr> <CR> IsNormalBuffer() ? '"_ciw' : '<CR>'
 
 " select all
 " nnoremap <leader>a gg<S-V>G
 
 " copy to ctrl-c system clipboard
 xnoremap <leader>y "+y
-xnoremap <expr>  (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"+y' : ''
-nnoremap <expr>  (buffer_name() != '[Command Line]' && &ft != 'qf') ? '"+' : ''
+xnoremap <expr>  IsNormalBuffer() ? '"+y' : ''
+nnoremap <expr>  IsNormalBuffer() ? '"+' : ''
 
 " open github files, not html views when using gf on a github link
 " currently not working
@@ -429,6 +440,35 @@ nnoremap <leader>5 5gt
 nnoremap <leader>6 6gt
 nnoremap <leader>7 7gt
 
+set nrformats=hex,bin " C-A, C-X operates on digits, letters, hex and binary numbers
+
+function! SingPlur(num)
+    let l:word = expand('<cword>')
+    if match(l:word, '^[a-zA-Z]*$') == -1
+        return -1
+    endif
+    try
+        py3 import pluralizer
+    catch
+        return ''
+    endtry
+    py3 if not locals().get('p'): p = pluralizer.Pluralizer()
+    let l:declension = a:num == 2 ? 'plural' : 'singular'
+    let l:mod = py3eval('p.' .. l:declension .. '("' .. l:word .. '")')
+    if l:mod != l:word
+        return "\<esc>ciw" .. l:mod .. "\<esc>"
+    endif
+    return ''
+endfunction
+
+function! CXA(num)
+    let l:action = SingPlur(a:num)
+    return l:action == -1 ? (a:num == 1 ? "\<C-x>" : "\<C-a>" ) : l:action
+endfunction
+
+nnoremap <expr> <C-x> CXA(1)
+nnoremap <expr> <C-a> CXA(2)
+
 " }}}
 
 
@@ -439,8 +479,8 @@ function! SudaWriteCmd()
     SudaWrite %
     " e
     set noreadonly
-    nnoremap <buffer> <C-S> <cmd>SudaWrite % \| set noreadonly<CR>
-    inoremap <buffer> <C-S> <cmd>:SudaWrite % \| set noreadonly<CR>
+    nnoremap <buffer> <C-S> <cmd>SudaWrite %<CR><cmd>set noreadonly<CR>
+    inoremap <buffer> <C-S> <cmd>SudaWrite %<CR><cmd>set noreadonly<CR>
 endfunction
 " command! WW Lazy load suda.vim | SudaWrite % | e | set noreadonly | nnoremap <buffer> <C-S> :sudawrite % \| e \| set noreadonly<cr> | inoremap <buffer>
 command! WW call SudaWriteCmd()
@@ -529,7 +569,15 @@ au BufRead,BufNewFile *.conf setfiletype conf
 " }}}
 
 " customize terminal title
-autocmd BufEnter * let &titlestring="vi:" . substitute(expand("%:p"), $HOME, '~', 0)
+function! PathFmt(path)
+    let path = substitute(a:path, $HOME, '~', 0)
+    let path = substitute(path, '\~/Documents/Uni/', '~Uni/', 0)
+    let path = substitute(path, '\~/Documents/', '~Doc/', 0)
+    let path = substitute(path, '\~/.config/nvim/', '~.nvim/', 0)
+    let path = substitute(path, '\~/.config/', '~.cfg/', 0)
+    return path
+endfunction
+autocmd BufEnter * let &titlestring="vi:" . PathFmt(expand("%:p"))
 " autocmd BufEnter * let &titlestring="\ue62b:" . substitute(expand("%:p"), $HOME, '~', 0)
 set title
 
@@ -542,8 +590,8 @@ set cul
 " nnoremap <leader>v <cmd>set cul!<cr>
 hi CursorLine guibg=#151515
 hi Cursor guifg=none guibg=none
-hi LineNr guifg=#9a9a9a guibg=#202020
-hi CursorLineNr guibg=#200040
+hi LineNr guifg=#9a9090 guibg=#202030
+hi CursorLineNr guibg=#101015
 augroup cursor
     au!
     autocmd InsertEnter * highlight CursorLine ctermbg=232
@@ -566,12 +614,13 @@ hi SpellLocal cterm=undercurl ctermbg=none guisp=cyan
 hi SpellRare cterm=undercurl ctermbg=none guisp=magenta
 
 hi Conceal ctermfg=lightblue ctermbg=none guibg=NONE
-hi Search ctermfg=0 ctermbg=11 guifg=#ffffe0 guibg=#4090d0
-hi CurSearch guifg=#ffffe0 guibg=#c04010
+" hi Search ctermfg=0 ctermbg=11 guifg=#ffffe0 guibg=#4090d0
+hi Search ctermfg=0 ctermbg=11 guifg=#e0e0e0 guibg=#3e7090
+" hi CurSearch guifg=#ffffe0 guibg=#c04010
 
 hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
 " hi Visual guibg=#254895 gui=none " PaperColor
-hi Visual guibg=#274790 gui=none
+hi Visual guibg=#244483 gui=none
 hi NvimSurroundHighlight gui=inverse
 
 hi LspDiagnosticsDefaultHint guibg=#303030 guifg=#c77000

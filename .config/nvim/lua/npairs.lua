@@ -143,9 +143,12 @@ npairs.add_rules({
         -- disable adding a newline when you press <cr>
         :with_cr(cond.none()),
     Rule("\\{", "\\}", {"tex", "latex"})
-        -- only in mathmode
-        :with_pair(function(opts) if vim.call('vimtex#syntax#in_mathzone') ~= 1 then return false end end)
-        :with_move(function(opts) return opts.char == '}' end),
+        :with_pair(function(opts) if vim.call('vimtex#syntax#in_mathzone') ~= 1 then return false end end) -- only in mathmode
+        ,
+    Rule("\\{", "\\}", {"tex", "latex"})
+        :with_move(function(opts) return opts.char == '}' end)
+        :use_key('}')
+        ,
     Rule('', '\\right]', {"tex", "latex"})
         :with_pair(cond.none())
         :with_move(function(opts) return opts.char == ']' end)

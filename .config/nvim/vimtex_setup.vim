@@ -5,10 +5,10 @@ let b:translate_tex_unicode = 0
 if g:UNICODE_ENABLED
     augroup tex_translate
         au!
-        lua require('tr_tex_chr')
+        "lua require('tr_tex_chr')
         au BufReadPre *.tex let b:lastpos = line("'\"")
         " au BufReadCmd *.tex call Tex_tr_BufRead()
-        au BufReadPost *.tex lua tr_buffer()
+        au BufReadPost *.tex lua require('tr_tex_chr').tr_buffer()
         au BufReadPost *.tex let b:translate_tex_unicode = 1 | exe b:lastpos .. 'mark \"' | normal! g`"
         " au FileReadCmd *.tex call Tex_tr_FileRead()
     augroup END
@@ -151,7 +151,6 @@ syntax match texMathDelim "⟩"
 
 function! Tex_tr_FileRead()
     exe "sil doau FileReadPre " . fnameescape(expand("<amatch>"))
-    "exe "noautocmd sil r! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
     exe "noautocmd r" . fnameescape(expand("<amatch>"))
     let b:translate_tex_unicode = 1
     exe "sil doau FileReadPost " . fnameescape(expand("<amatch>"))
@@ -161,10 +160,8 @@ function! Tex_tr_BufRead()
     " let l1 = line("'\"")
     exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
     " let l2 =  line("'\"")
-    " exe "noautocmd sil %! cat " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
-    " exe "noautocmd e " . fnameescape(expand("<amatch>")) .  " | " fnameescape(expand("~/latex_tools/tr_tex_chr.lua"))
     " let l3 = line("'\"")
-    exe "sil lua read_tr_buffer('" . fnameescape(expand("<amatch>")) . "')"
+    exe "sil lua require('tr_tex_chr').read_tr_buffer('" . fnameescape(expand("<amatch>")) . "')"
     let b:translate_tex_unicode = 1
     exe "sil doau BufReadPost " . fnameescape(expand("<amatch>"))
     " exe l1 .. 'mark \"'
@@ -185,10 +182,6 @@ function! Tex_tr_BufWrite()
     exe "sil doau BufWritePost " . fnameescape(expand("<amatch>"))
     set nomodified
 endfunction
-
-" function! VimtexPostSetup()
-"     lua require('tex_tools')
-" endfunction
 
 au BufReadPost *.tex lua require('vimtex').imaps_setup()
 

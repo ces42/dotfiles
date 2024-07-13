@@ -19,11 +19,8 @@ def tr_write(s):
     new.append(s[last_pos :])
     return ''.join(new)
 
-# chr_to_tex = {}
-# read_dict('/home/ca/latex_tools/translate.csv')
-# tex_to_chr = vim.lua.require('tr_tex_chr')
-# chr_to_tex = {char: '\\' + cmd for cmd, char in tex_to_chr.items()}
-chr_to_tex = vim.lua.require('tr_tex_chr').chr_to_tex
+# chr_to_tex = vim.lua.require('tr_tex_chr').chr_to_tex
+chr_to_tex = vim.exec_lua("return require('tr_tex_chr').chr_to_tex")
 cmp = re.compile(
         '(' +
         # '|'.join(chr(c) + '(?![a-zA-Z])'*v.isalpha() for c, v in chr_to_tex.items())

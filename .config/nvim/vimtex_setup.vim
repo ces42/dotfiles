@@ -1,16 +1,11 @@
-let g:UNICODE_ENABLED=1
 
-let b:translate_tex_unicode = 0
+let translate_tex_unicode = 0
 
 if g:UNICODE_ENABLED
     augroup tex_translate
         au!
-        "lua require('tr_tex_chr')
         au BufReadPre *.tex let b:lastpos = line("'\"")
-        " au BufReadCmd *.tex call Tex_tr_BufRead()
-        au BufReadPost *.tex lua require('tr_tex_chr').tr_buffer()
-        au BufReadPost *.tex let b:translate_tex_unicode = 1 | exe b:lastpos .. 'mark \"' | normal! g`"
-        " au FileReadCmd *.tex call Tex_tr_FileRead()
+        au BufReadPost *.tex let b:translate_tex_unicode = 1 | exe b:lastpos .. 'mark \"' | syntax on | normal! g`"
     augroup END
 endif
 
@@ -138,54 +133,38 @@ let g:vimtex_delim_list = { 'delim_math' : {
             \}
 
 
-
 setlocal keywordprg=texdoc
-
-syntax match texMathDelim "⟨"
-syntax match texMathDelim "⟩"
-
 
 " --------------------------------------------------------------------------------
 " Commands for read/write with unicode substitution
 " --------------------------------------------------------------------------------
 
-function! Tex_tr_FileRead()
-    exe "sil doau FileReadPre " . fnameescape(expand("<amatch>"))
-    exe "noautocmd r" . fnameescape(expand("<amatch>"))
-    let b:translate_tex_unicode = 1
-    exe "sil doau FileReadPost " . fnameescape(expand("<amatch>"))
-endfunction
-
-function! Tex_tr_BufRead()
-    " let l1 = line("'\"")
-    exe "sil doau BufReadPre " . fnameescape(expand("<amatch>"))
-    " let l2 =  line("'\"")
-    " let l3 = line("'\"")
-    exe "sil lua require('tr_tex_chr').read_tr_buffer('" . fnameescape(expand("<amatch>")) . "')"
-    let b:translate_tex_unicode = 1
-    exe "sil doau BufReadPost " . fnameescape(expand("<amatch>"))
-    " exe l1 .. 'mark \"'
-    " normal! g`"
-    " echo l1 l2 l3 line("'\"")
-endfunction
+" Tex_tr_BufRead and Tex_tr_FileRead moved to tex.vim, which is *always*
+" source, even when vimtex is not loaded. This is necessary because I load
+" vimtex at `BufReadPre *.tex` and at that point it's too late to define
+" BufReadCmd
 
 function! Tex_tr_FileWrite()
     exe "sil doau FileWritePre " . fnameescape(expand("<amatch>"))
-    exe "noautocmd sil py3 tr_write_file('" .fnameescape(expand("<amatch>")) . "')"
+    "exe "noautocmd sil py3 tr_write_file('" .fnameescape(expand("<amatch>")) . "')"
+    exe "sil lua require('tr_tex_chr').tr_write_file('" .fnameescape(expand("<amatch>")) . "')"
     exe "sil doau FileWritePost " . fnameescape(expand("<amatch>"))
     set nomodified
 endfunction
 
 function! Tex_tr_BufWrite()
     exe "sil doau BufWritePre " . fnameescape(expand("<amatch>"))
-    exe "noautocmd sil py3 tr_write_buffer('" .fnameescape(expand("<amatch>")) . "')"
+    "exe "noautocmd sil py3 tr_write_buffer('" .fnameescape(expand("<amatch>")) . "')"
+    exe "sil lua require('tr_tex_chr').tr_write_buf('" .fnameescape(expand("<amatch>")) . "')"
     exe "sil doau BufWritePost " . fnameescape(expand("<amatch>"))
     set nomodified
 endfunction
 
 au BufReadPost *.tex lua require('vimtex').imaps_setup()
+"au BufWinEnter *.tex lua require('vimtex').imaps_setup()
 
-command! UnicodeToTex py3 tr_change_buffer()
+"command! UnicodeToTex py3 tr_change_buffer()
+command! UnicodeToTex py3 "sil lua require('tr_tex_chr').tr_buffer()"
 
 
 " ------------------------------------------------------------------------------
@@ -209,7 +188,10 @@ au! BufAdd *diary.tex :LspStop
 function! TexSetupBuffer()
     nnoremap <buffer> <leader>ld <cmd>!firefox http://detexify.kirelabs.org/classify.html<CR>
     nnoremap <buffer> <leader>lf <cmd>lua require('vimtex').expand_font_macros()<CR>
-    iunmap <buffer> ]]
+    try
+        iunmap <buffer> ]]
+    catch
+    endtry
     inoremap <buffer> <C-]> <plug>(vimtex-delim-close)
     inoremap <buffer> <expr> <C-CR> vimtex#env#is_inside('align') != [0, 0] ? ' \\<CR>' : '<C-CR>'
     nnoremap <buffer> <expr> <C-CR> vimtex#env#is_inside('align') != [0, 0] ? 'i \\<CR>' : '<C-CR>'
@@ -341,17 +323,97 @@ EOF
     call vimtex#syntax#core#new_env({'name': 'cd', 'starred': v:true, 'math': v:true})
     " call vimtex#syntax#core#new_region_math('cd*')
 
-    syntax region texMathZoneTI matchgroup=texMathDelimZoneTI start="\$" skip="\\\\\|\\\$" end="\$" contains=@texClusterMath nextgroup=texMathTextAfter concealends
+    if g:UNICODE_ENABLED
+        syntax match texMathDelim "⟨" contained
+        syntax match texMathDelim "⟩" contained
+        syntax match texMathOper "\%#=1[∧×∂≤≥≲≳⊆⊂⊇⊃≠∈⊗∘]" contained display
+        syntax match texMathDelim "∥" contained
+    endif
+
+    "syntax region texMathZoneTI matchgroup=texMathDelimZoneTI start="\$" skip="\\[\\\$]" end="\$\@1<!\$" contains=@texClusterMath nextgroup=texMathTextAfter concealends
+    "syntax region texMathZoneTI matchgroup=_texMathDelimZoneTI start="\$\$"me=e-1 end="" contains=@texClusterMath nextgroup=texMathTextAfter
+    "hi def link _texMathDelimZoneTI texError
+    hi texMathDelimMod guifg=#908010
+
     setlocal conceallevel=1
+
+    syntax match texMathCmdStyleBold "\\bf[a-zA-Z]"me=e-1 contained nextgroup=texMathStyleBoldShort
+    syntax match texMathStyleBoldShort "." contained
+    hi def link texMathStyleBoldShort texMathStyleBold
+    hi texMathCmdStyleBold guifg=#866030
 endfunction
+"
+"
+"function! HighlightMath()
+"    hi Normal guifg=#575757
+"    hi texRefArg guifg=#575757
+"    hi texCmdRef guifg=#575757
+"    hi texMathEnvBgnEnd guifg=#575757
+"    hi texPartArgTitle guifg=#575757
+"    hi texCmd guifg=#575757
+"    hi Comment guifg=#404060
+"endfunction
 
 
-function! HighlightMath()
-    hi Normal guifg=#575757
-    hi texRefArg guifg=#575757
-    hi texCmdRef guifg=#575757
-    hi texMathEnvBgnEnd guifg=#575757
-    hi texPartArgTitle guifg=#575757
-    hi texCmd guifg=#575757
-    hi Comment guifg=#404060
-endfunction
+" --------------------------------------------------------------------------------
+" this was part of the attempts of handling left/right from UltiSnips
+" --------------------------------------------------------------------------------
+
+"function! vimtex_setup#add_delim_modifiers(width) abort " {{{1
+"  call vimtex#util#undostore()
+"  if a:width != 0
+"      let line = getline('.')
+"      let column = col('.')
+"      call setline(line('.'), strpart(line, 0, col('.') - a:width - 1) . line[col('.') - 1:])
+"      call cursor(line('.'), column - a:width)
+"  endif
+"  " Save cursor position
+"  let l:cursor = vimtex#pos#get_cursor()
+"
+"  " Use syntax highlights to detect region math region
+"  let l:ww = &whichwrap
+"  set whichwrap=h
+"  while vimtex#syntax#in_mathzone()
+"    normal! h
+"    if vimtex#pos#get_cursor()[1:2] == [1, 1] | break | endif
+"  endwhile
+"  let &whichwrap = l:ww
+"  let l:startval = vimtex#pos#val(vimtex#pos#get_cursor())
+"
+"  let l:undostore = v:true
+"  call vimtex#pos#set_cursor(l:cursor)
+"
+"  while v:true
+"    let [l:open, l:close] = vimtex#delim#get_surrounding('delim_modq_math')
+"    if empty(l:open) || vimtex#pos#val(l:open) <= l:startval
+"      break
+"    endif
+"
+"    call vimtex#pos#set_cursor(vimtex#pos#prev(l:open))
+"    if !empty(l:open.mod) | continue | endif
+"
+"    if l:undostore
+"      let l:undostore = v:false
+"      call vimtex#pos#set_cursor(l:cursor)
+"      call vimtex#pos#set_cursor(vimtex#pos#prev(l:open))
+"    endif
+"
+"    " Add close modifier
+"    let line = getline(l:close.lnum)
+"    let line = strpart(line, 0, l:close.cnum - 1)
+"          \ .  '\right' . strpart(line, l:close.cnum - 1)
+"    call setline(l:close.lnum, line)
+"
+"    " Add open modifier
+"    let line = getline(l:open.lnum)
+"    let line = strpart(line, 0, l:open.cnum - 1)
+"          \ . '\left' . strpart(line, l:open.cnum - 1)
+"    call setline(l:open.lnum, line)
+"
+"    " Adjust cursor position
+"    let l:cursor[2] += 5
+"  endwhile
+"
+"  call vimtex#pos#set_cursor(l:cursor)
+"  return b:changedtick
+"endfunction

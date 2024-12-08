@@ -20,6 +20,11 @@ endfunction
 " put this here so that firenvim can unmap <ScrollWheelUp>, <ScrollWheelDown>
 so ~/.config/nvim/scrolloff.vim
 
+" unmap F-keys in insert mode
+for i in range(1, 48+1)
+    exe 'inoremap <F' .. i .. '> <nop>'
+endfor
+
 lua require('init')
 " color tokyonight-night
 colorscheme catppuccin-mocha
@@ -82,6 +87,9 @@ so ~/.config/nvim/tex.vim
 " }}}
 
 " set options {{{
+set showcmd " show commands typed in normal mode
+set lazyredraw " don't redraw during macro execution
+
 set history=10000
 
 set ttimeout ttimeoutlen=3
@@ -95,11 +103,18 @@ set clipboard=unnamed " use system clipboard
 
 set undofile " save undo history
 
-set showcmd " show commands typed in normal mode
-set lazyredraw " don't redraw during macro execution
-
 set splitright " split window appear on right
-set hi=5000 " size of command history
+
+" linenumbers
+set number
+set relativenumber
+augroup line_numbers
+    autocmd BufLeave * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
+    autocmd BufEnter * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
+    autocmd FocusLost * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
+    autocmd FocusGained * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
+    autocmd CmdwinEnter * setlocal nonumber | setlocal nornu
+augroup END
 
 set whichwrap=<,>,[,] "arrow keys navigate to next line at end of line
 
@@ -112,17 +127,6 @@ set inccommand=split "live preview of substitutions
 
 " set tab width behaviour
 "set shiftwidth=4
-
-" linenumbers
-set number
-set relativenumber
-augroup line_numbers
-    autocmd BufLeave * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
-    autocmd BufEnter * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
-    autocmd FocusLost * : if &nu && !(&ft == 'qf') | setlocal norelativenumber | endif
-    autocmd FocusGained * : if &nu && !(&ft == 'qf') | setlocal relativenumber | endif
-    autocmd CmdwinEnter * setlocal nonumber | setlocal nornu
-augroup END
 
 "" line wrapping
 " breakindent can make insert mode slow
@@ -186,9 +190,9 @@ inoremap <C-R> <C-G>u<C-R>
 " system-clipboard
 " inoremap <C-R><C-R> <C-R>"
 "inoremap <C-R><C-R> <C-R>*
-inoremap <C-R><C-R> <C-\><C-o><Plug>(YankyPutAfter)<Right>
-inoremap <c-p> <C-\><C-o><Plug>(YankyPreviousEntry)
-inoremap <c-n> <C-\><C-o><Plug>(YankyNextEntry)
+inoremap <C-R><C-R> <cmd>set ve+=onemore<CR><C-o><Plug>(YankyPutBefore)<Right><cmd>set ve-=onemore<CR>
+inoremap <c-p> <cmd>set ve+=onemore<CR><C-o><Plug>(YankyPreviousEntry)<cmd>set ve-=onemore<CR>
+inoremap <c-n> <cmd>set ve+=onemore<CR><C-o><Plug>(YankyNextEntry)<cmd>set ve-=onemore<CR>
 inoremap <C-R><C-E> <C-R>+
 " ctrl+L in insert mode to correct last spelling mistake
 inoremap <C-l> <cmd>set spell<CR><c-g>u<Esc>[s1z=`]a<c-g>u
@@ -231,9 +235,9 @@ nnoremap <leader>m <cmd>set foldmethod=marker<CR>
 nnoremap <M-g> lm`b~``h
 inoremap <M-g> <Right><C-\><C-o>m`<C-o>b<C-o>~<C-\><C-o>``<Left>
 " C-w deletes previous WORD in insert mode
-inoremap <C-w> <C-\><C-o>"_dB
+"inoremap <C-w> <C-\><C-o>"_dB
 " C-Backspace deletes previous word, C-Del word after cursor
-inoremap <C-BS> <C-w>
+inoremap <C-BS> <cmd>set ve+=onemore<bar>norm! "_dB<CR><cmd>set ve-=onemore<CR>
 cnoremap <C-BS> <C-w>
 inoremap <C-h> <C-w>
 cnoremap <C-h> <C-w>
@@ -249,7 +253,7 @@ cnoremap <C-e> <end>
 " Alt/C + b/f for word/character movement (like bash/emacs)
 "inoremap <C-f> <Right>
 "inoremap <C-b> <Left>
-inoremap <M-f> <cmd>normal! w<CR>
+inoremap <M-f> <cmd>normal! e<CR><right>
 inoremap <M-b> <cmd>normal! b<CR>
 " Ctrl + hjkl to move in insert and command mode
 " inoremap <M-j> <cmd>normal! gj<CR>
@@ -267,8 +271,8 @@ nnoremap <M-h> <Left>
 nnoremap <M-l> <Right>
 " emacs keybindings in command mode
 cnoremap <C-A> <Home>
-cnoremap <C-F> <Right>
-cnoremap <C-B> <Left>
+"cnoremap <C-F> <Right>
+"cnoremap <C-B> <Left>
 cnoremap <M-b> <S-Left>
 cnoremap <M-f> <S-Right>
 cnoremap <C-D> <del>
@@ -346,14 +350,15 @@ vnoremap & :&&<CR>
 imap <C-S-Y> <C-Y><C-Y><C-Y><C-Y><C-Y>
 
 " Use shift + arrow keys in insert mode to select
-inoremap <S-Left> <Esc>v
-inoremap <S-Right> <Right><Esc>v
-
-vnoremap <S-Left> <Left>
-vnoremap <S-Right> <Right>
+"inoremap <S-Left> <Esc>v
+"inoremap <S-Right> <Right><Esc>v
+"
+"vnoremap <S-Left> <Left>
+"vnoremap <S-Right> <Right>
 
 " gcy to copy insert commented of a line above it
 nmap gcy m`yyPgcc``
+vmap <leader>gc ygvgc`>p
 
 " gV to visually select current "line" w.r.t line wrap
 nnoremap gV g^vg$
@@ -375,11 +380,10 @@ nnoremap gO O.<BS><ESC>
 "endfunction
 "nnoremap <silent> \e <cmd>set opfunc=Extract<cr>g@
 
-nnoremap <f5> <cmd>set autochdir\|:w\|Make<cr>
-" imap <f5> <C-o>:w\|make<cr>
+nnoremap <f5> <cmd>w \| Make!<cr>
 
 nnoremap <F3> :%s//g<Left><Left><C-^>
-vnoremap <expr> <F3> ':s/' .. ((mode()[0] == 'v' \|\| mode()[0] == "\<C-v>") ? '%V' : '') .. '/g<Left><Left><C-^>'
+vnoremap <expr> <F3> ':s/' .. ((mode()[0] == 'v' \|\| mode()[0] == "\<C-v>") ? '\%V' : '') .. '/g<Left><Left><C-^>'
 inoremap <F3> <Esc>:%s//g<Left><Left>
 
 " nnoremap g/ /\c<left><left>
@@ -569,14 +573,23 @@ au BufRead,BufNewFile *.conf setfiletype conf
 " }}}
 
 " customize terminal title
+let s:path_sub_dict = {
+            \'build': 'b',
+            \'Documents': 'Doc',
+            \'Documents/Uni': 'Uni',
+            \'.config': '.cfg',
+            \'.config/nvim': '.nvim',
+            \}
 function! PathFmt(path)
-    let path = substitute(a:path, $HOME, '~', 0)
-    let path = substitute(path, '\~/Documents/Uni/', '~Uni/', 0)
-    let path = substitute(path, '\~/Documents/', '~Doc/', 0)
-    let path = substitute(path, '\~/.config/nvim/', '~.nvim/', 0)
-    let path = substitute(path, '\~/.config/', '~.cfg/', 0)
-    return path
+    let l:path = substitute(a:path, $HOME, '~', 0)
+    let l:path = substitute(
+                \ l:path,
+                \'\v\~/(Documents%(/Uni)?|.config%(/nvim)?|build)',
+                \ { match -> '~' .. s:path_sub_dict[match[1]] },
+                \0)
+    return len(l:path) ? l:path : " "
 endfunction
+
 autocmd BufEnter * let &titlestring="vi:" . PathFmt(expand("%:p"))
 " autocmd BufEnter * let &titlestring="\ue62b:" . substitute(expand("%:p"), $HOME, '~', 0)
 set title
@@ -594,9 +607,7 @@ hi LineNr guifg=#9a9090 guibg=#202030
 hi CursorLineNr guibg=#101015
 augroup cursor
     au!
-    autocmd InsertEnter * highlight CursorLine ctermbg=232
     autocmd InsertEnter * highlight CursorLine guibg=#202020
-    autocmd InsertLeave * highlight CursorLine ctermbg=234
     autocmd InsertLeave * highlight CursorLine guibg=#151515
 augroup END
 
@@ -618,7 +629,7 @@ hi Conceal ctermfg=lightblue ctermbg=none guibg=NONE
 hi Search ctermfg=0 ctermbg=11 guifg=#e0e0e0 guibg=#3e7090
 " hi CurSearch guifg=#ffffe0 guibg=#c04010
 
-hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
+"hi MatchParen guibg=#c00000 guifg=#a0ff00 gui=none
 " hi Visual guibg=#254895 gui=none " PaperColor
 hi Visual guibg=#244483 gui=none
 hi NvimSurroundHighlight gui=inverse
@@ -707,11 +718,13 @@ function! Searchcount() abort
             \ : '[0/0]'
 endfunction
 
+
 lua << EOF
 function lua_sc()
     s = vim.fn.Searchcount()
     return s .. "lua"
 end
 EOF
+
 
 " set statusline=%<%f\ %h%m%r\ %{Searchcount()}%=%-14.(%l,%c%V%)\ %P

@@ -44,6 +44,8 @@ local shortcuts = {
     A = '∀',
     E = '∃',
     ['*'] = '×',
+    [')'] = '⊃',
+    [']'] = '⊇',
     ['('] = '⊂',
     ['['] = '⊆',
     ['<'] = '⟨',
@@ -60,7 +62,13 @@ local shortcuts = {
     ['~>'] = '≳',
     ['~<'] = '≲',
     ['vl'] = 'ℓ',
+    ['va'] = '∩',
+    ['vu'] = '∪',
 }
+
+if vim.env.TERM == 'xterm-kitty' then
+    shortcuts['U'] = 'Υ'
+end
 
 function s.imaps_setup()
     local imaps = vim.api.nvim_get_var('vimtex_imaps_list')
